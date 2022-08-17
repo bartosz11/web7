@@ -1,0 +1,32 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group 'me.bartosz1'
+version '0.0.2'
+
+repositories {
+    mavenCentral()
+}
+//Zero dependencies... How cool, right?
+dependencies {
+}
+
+test {
+    useJUnitPlatform()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
