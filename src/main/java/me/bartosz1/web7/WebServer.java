@@ -91,6 +91,10 @@ public class WebServer implements Runnable {
         endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("OPTIONS").setHandler(handler));
     }
 
+    public void start() {
+        new Thread(this, "web7-main").start();
+    }
+
     @Override
     public void run() {
         try {
