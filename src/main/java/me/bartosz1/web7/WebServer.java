@@ -21,6 +21,7 @@ public class WebServer implements Runnable {
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
     public static final String BRAND = "web7/0.0.4";
     private WebEndpointHandler methodNotAllowedHandler;
+    private WebEndpointHandler routeNotFoundHandler;
 
     public WebServer(int port) {
         this.PORT = port;
@@ -35,9 +36,10 @@ public class WebServer implements Runnable {
         String method = split[0].toUpperCase(Locale.ROOT);
         String endpoint = split[1].split("\\?")[0];
         String protocol = split[2];
+        Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, null);
         if (endpoints.containsKey(endpoint)) {
             WebEndpointData endpointData = endpoints.get(endpoint);
-            Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
+            request.setEndpointData(endpointData);
             if (method.equals(endpointData.getRequestMethod()) || method.equals("OPTIONS") || method.equals("HEAD") || endpointData.getRequestMethod().equalsIgnoreCase("ANY")) {
                 switch (method) {
                     case "TRACE":
@@ -61,11 +63,12 @@ public class WebServer implements Runnable {
                 }
             } else {
                 if (methodNotAllowedHandler != null) methodNotAllowedHandler.handle(request, response);
+                //code should be forced in both cases
                 response.setStatus(HttpStatus.METHOD_NOT_ALLOWED);
             }
         } else {
+            if (routeNotFoundHandler != null) routeNotFoundHandler.handle(request, response);
             response.setStatus(HttpStatus.NOT_FOUND);
-            response.setBody("404 - Endpoint not found");
         }
         ParsingUtils.parseResponse(response, printWriter, protocol);
     }
@@ -119,4 +122,10 @@ public class WebServer implements Runnable {
         this.methodNotAllowedHandler = methodNotAllowedHandler;
         return this;
     }
+
+    public WebServer setRouteNotFoundHandler(WebEndpointHandler routeNotFoundHandler) {
+        this.routeNotFoundHandler = routeNotFoundHandler;
+        return this;
+    }
+
 }

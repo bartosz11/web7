@@ -12,9 +12,10 @@ public class Request {
     private final String requestMethod;
     private final String protocol;
     private final String path;
-    private final WebEndpointData endpointData;
+    private WebEndpointData endpointData;
     private final Map<String, String> params;
     private final String rawRequest;
+    private boolean endpointDataSet = false;
 
     public Request(Map<String, String> headers, Object body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, String rawRequest) {
         this.headers = headers;
@@ -24,7 +25,10 @@ public class Request {
         this.requestMethod = split[0];
         this.protocol = split[2];
         this.path = split[1];
-        this.endpointData = endpointData;
+        if (endpointData != null) {
+            this.endpointData = endpointData;
+            this.endpointDataSet = true;
+        }
         this.params = params;
         this.rawRequest = rawRequest;
     }
@@ -67,5 +71,13 @@ public class Request {
 
     public String getRawRequest() {
         return rawRequest;
+    }
+    //will work only one time, object is read only
+    public Request setEndpointData(WebEndpointData endpointData) {
+        if (!endpointDataSet) {
+            this.endpointData = endpointData;
+            this.endpointDataSet = true;
+        }
+        return this;
     }
 }
