@@ -14,8 +14,9 @@ public class Request {
     private final String path;
     private final WebEndpointData endpointData;
     private final Map<String, String> params;
+    private final String rawRequest;
 
-    public Request(Map<String, String> headers, Object body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params) {
+    public Request(Map<String, String> headers, Object body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, String rawRequest) {
         this.headers = headers;
         this.body = body;
         this.remoteAddress = remoteAddress;
@@ -25,6 +26,7 @@ public class Request {
         this.path = split[1];
         this.endpointData = endpointData;
         this.params = params;
+        this.rawRequest = rawRequest;
     }
 
     public Object getBody() {
@@ -61,5 +63,9 @@ public class Request {
 
     public Map<String, String> getParams() {
         return params;
+    }
+
+    public String getRawRequest() {
+        return rawRequest;
     }
 }

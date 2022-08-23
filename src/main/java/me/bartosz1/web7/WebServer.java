@@ -19,7 +19,8 @@ public class WebServer implements Runnable {
     private final HashMap<String, WebEndpointData> endpoints = new HashMap<>();
     private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
-    public static final String BRAND = "web7/0.0.3";
+    public static final String BRAND = "web7/0.0.4";
+    private WebEndpointHandler methodNotAllowedHandler;
 
     public WebServer(int port) {
         this.PORT = port;
@@ -36,30 +37,32 @@ public class WebServer implements Runnable {
         String protocol = split[2];
         if (endpoints.containsKey(endpoint)) {
             WebEndpointData endpointData = endpoints.get(endpoint);
+            Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
             if (method.equals(endpointData.getRequestMethod()) || method.equals("OPTIONS") || method.equals("HEAD") || endpointData.getRequestMethod().equalsIgnoreCase("ANY")) {
-                if (method.equals("TRACE"))
-                    TRACE_ENDPOINT_HANDLER.handle(bufferedReader, printWriter, split);
-                else {
-                    Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
-                    if ("OPTIONS".equals(method.toUpperCase(Locale.ROOT))) {
+                switch (method) {
+                    case "TRACE":
+                        TRACE_ENDPOINT_HANDLER.handle(request, response);
+                        break;
+                    case "OPTIONS":
                         if (endpointData.getRequestMethod().equals("OPTIONS") && endpointData.getHandler() != null)
                             endpointData.getHandler().handle(request, response);
                         else OPTIONS_ENDPOINT_HANDLER.handle(request, response);
-                    } else {
+                        break;
+                    default:
                         WebEndpointHandler handler = endpointData.getHandler();
                         if (handler != null) handler.handle(request, response);
                         //HEAD requests shouldn't return body
                         if (method.toUpperCase(Locale.ROOT).equals("HEAD")) {
                             response.setBody(null);
                             response.setContentType(null);
+                            response.getHeaders().remove("Content-Length");
                         }
-                    }
+                        break;
                 }
             } else {
+                if (methodNotAllowedHandler != null) methodNotAllowedHandler.handle(request, response);
                 response.setStatus(HttpStatus.METHOD_NOT_ALLOWED);
-                response.setBody("405 - Request method can't be used with this endpoint");
             }
-
         } else {
             response.setStatus(HttpStatus.NOT_FOUND);
             response.setBody("404 - Endpoint not found");
@@ -111,5 +114,9 @@ public class WebServer implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public WebServer setMethodNotAllowedHandler(WebEndpointHandler methodNotAllowedHandler) {
+        this.methodNotAllowedHandler = methodNotAllowedHandler;
+        return this;
     }
 }

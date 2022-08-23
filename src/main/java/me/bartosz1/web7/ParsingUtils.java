@@ -10,6 +10,8 @@ import java.util.*;
 public class ParsingUtils {
 
     public static Request parseRequest(BufferedReader bufferedReader, InetAddress addr, String[] firstLineSplit, WebEndpointData endpointData) throws IOException {
+        StringBuilder rawRequest = new StringBuilder();
+        rawRequest.append(String.join(" ", firstLineSplit)).append("\n");
         String userAgent = "";
         Map<String, String> headers = new HashMap<>();
         int contentLength = 0;
@@ -30,6 +32,7 @@ public class ParsingUtils {
         while ((line = bufferedReader.readLine()) != null) {
             //means end of headers
             if (line.isEmpty()) break;
+            rawRequest.append(line).append("\n");
             //Parse header, there might be a better solution lol
             String[] lineSplit = line.split(":");
             String headerName = lineSplit[0];
@@ -46,7 +49,7 @@ public class ParsingUtils {
         //Parse body
         StringBuilder body = new StringBuilder();
         //means we got some body
-        if (contentLength > 0) {
+        if (contentLength > 0 && !firstLineSplit[0].equals("TRACE")) {
             int read;
             //-1 means should mean EOF
             while ((read = bufferedReader.read()) != -1) {
@@ -56,7 +59,7 @@ public class ParsingUtils {
             }
         }
         //Finally return request
-        return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, firstLineSplit, endpointData, Collections.unmodifiableMap(urlParams));
+        return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, firstLineSplit, endpointData, Collections.unmodifiableMap(urlParams), rawRequest.toString());
     }
 
     public static void parseResponse(Response response, PrintWriter printWriter, String protocol) {
