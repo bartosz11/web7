@@ -1,7 +1,7 @@
 package me.bartosz1.web7.handlers;
 
+import me.bartosz1.web7.ParsingUtils;
 import me.bartosz1.web7.Response;
-import me.bartosz1.web7.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class TraceEndpointHandler {
             }
             Response response = new Response();
             response.setBody(sb.toString()).setContentType("message/http");
-            Utils.parseResponse(response, printWriter, firstLine[2]);
+            ParsingUtils.parseResponse(response, printWriter, firstLine[2]);
         } catch (IOException e) {
             e.printStackTrace();
         }

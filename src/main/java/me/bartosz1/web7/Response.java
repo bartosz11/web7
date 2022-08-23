@@ -1,6 +1,10 @@
 package me.bartosz1.web7;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 
 public class Response {
 
@@ -59,6 +63,23 @@ public class Response {
         contentType = null;
         body = null;
         headers.put("Location", url);
+        return this;
+    }
+
+    public Response useFileAsBody(File file) {
+        if (file.canRead()) {
+            contentType = MimeType.getByFileName(file).getMimeType();
+            try {
+                List<String> bodyLines = Files.readAllLines(file.toPath());
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < bodyLines.size(); i++) {
+                    sb.append(bodyLines.get(i)).append("\n");
+                }
+                body = sb.toString();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else throw new IllegalStateException("File is unreadable!");
         return this;
     }
 }

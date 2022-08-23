@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.util.*;
 
-public class Utils {
+public class ParsingUtils {
 
     public static Request parseRequest(BufferedReader bufferedReader, InetAddress addr, String[] firstLineSplit, WebEndpointData endpointData) throws IOException {
         String userAgent = "";

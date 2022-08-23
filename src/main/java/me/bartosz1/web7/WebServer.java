@@ -19,7 +19,7 @@ public class WebServer implements Runnable {
     private final HashMap<String, WebEndpointData> endpoints = new HashMap<>();
     private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
-    public static final String BRAND = "web7/0.0.2";
+    public static final String BRAND = "web7/0.0.3";
 
     public WebServer(int port) {
         this.PORT = port;
@@ -40,7 +40,7 @@ public class WebServer implements Runnable {
                 if (method.equals("TRACE"))
                     TRACE_ENDPOINT_HANDLER.handle(bufferedReader, printWriter, split);
                 else {
-                    Request request = Utils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
+                    Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
                     if ("OPTIONS".equals(method.toUpperCase(Locale.ROOT))) {
                         if (endpointData.getRequestMethod().equals("OPTIONS") && endpointData.getHandler() != null)
                             endpointData.getHandler().handle(request, response);
@@ -64,35 +64,40 @@ public class WebServer implements Runnable {
             response.setStatus(HttpStatus.NOT_FOUND);
             response.setBody("404 - Endpoint not found");
         }
-        Utils.parseResponse(response, printWriter, protocol);
+        ParsingUtils.parseResponse(response, printWriter, protocol);
     }
 
     public void trace(String path) {
-        endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("TRACE"));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("TRACE"));
     }
 
     public void get(String path, WebEndpointHandler handler) {
-        endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("GET").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("GET").setHandler(handler));
     }
 
     public void post(String path, WebEndpointHandler handler) {
-        endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("POST").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("POST").setHandler(handler));
     }
 
     public void put(String path, WebEndpointHandler handler) {
-        endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("PUT").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("PUT").setHandler(handler));
     }
 
     public void delete(String path, WebEndpointHandler handler) {
-        endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("PUT").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("PUT").setHandler(handler));
     }
 
     public void options(String path, WebEndpointHandler handler) {
-        endpoints.put(path, new WebEndpointData().setEndpoint(path).setRequestMethod("OPTIONS").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("OPTIONS").setHandler(handler));
     }
 
-    public void start() {
+    private void addEndpoint(String path, WebEndpointData endpointData) {
+        endpoints.put(path, endpointData);
+    }
+
+    public WebServer start() {
         new Thread(this, "web7-main").start();
+        return this;
     }
 
     @Override
