@@ -1,0 +1,13 @@
+name: Validate Gradle wrapper
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Gradle wrapper
+        id: validate_gradle
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
