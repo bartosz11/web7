@@ -72,8 +72,8 @@ public class Response {
             try {
                 List<String> bodyLines = Files.readAllLines(file.toPath());
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < bodyLines.size(); i++) {
-                    sb.append(bodyLines.get(i)).append("\n");
+                for (String bodyLine : bodyLines) {
+                    sb.append(bodyLine).append("\n");
                 }
                 body = sb.toString();
             } catch (IOException e) {

@@ -4,14 +4,10 @@ import me.bartosz1.web7.handlers.OptionsEndpointHandler;
 import me.bartosz1.web7.handlers.TraceEndpointHandler;
 import me.bartosz1.web7.handlers.WebEndpointHandler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -66,8 +62,7 @@ public class WebServer implements Runnable {
 
     @Override
     public void run() {
-        try {
-            ServerSocket serverSocket = new ServerSocket(PORT);
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             while (true) {
                 Socket socket = serverSocket.accept();
                 executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
@@ -76,6 +71,7 @@ public class WebServer implements Runnable {
             e.printStackTrace();
         }
     }
+
     public WebServer setMethodNotAllowedHandler(WebEndpointHandler methodNotAllowedHandler) {
         this.methodNotAllowedHandler = methodNotAllowedHandler;
         return this;
