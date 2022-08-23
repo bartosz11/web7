@@ -20,6 +20,7 @@ public class WebServer implements Runnable {
     public static final String BRAND = "web7/0.0.5";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
+    private Thread mainThread;
     //currently final, might change this at some point
     private final ExecutorService executorService = Executors.newFixedThreadPool(10, new HandlerThreadFactory("web7-handler-%d"));
 
@@ -56,16 +57,29 @@ public class WebServer implements Runnable {
     }
 
     public WebServer start() {
-        new Thread(this, "web7-main").start();
+        mainThread = new Thread(this, "web7-main");
+        mainThread.start();
+        addShutdownHook(this);
         return this;
+    }
+
+    public void shutdown() {
+        endpoints.clear();
+        executorService.shutdown();
+
     }
 
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             while (true) {
-                Socket socket = serverSocket.accept();
-                executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
+                if (!executorService.isShutdown()) {
+                    Socket socket = serverSocket.accept();
+                    executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
+                } else {
+                    serverSocket.close();
+                    break;
+                };
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,6 +94,15 @@ public class WebServer implements Runnable {
     public WebServer setRouteNotFoundHandler(WebEndpointHandler routeNotFoundHandler) {
         this.routeNotFoundHandler = routeNotFoundHandler;
         return this;
+    }
+
+    private void addShutdownHook(WebServer webServer) {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                webServer.shutdown();
+            }
+        }));
     }
 
 }
