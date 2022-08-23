@@ -12,6 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class WebServer implements Runnable {
 
@@ -19,58 +21,14 @@ public class WebServer implements Runnable {
     private final HashMap<String, WebEndpointData> endpoints = new HashMap<>();
     private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
-    public static final String BRAND = "web7/0.0.4";
+    public static final String BRAND = "web7/0.0.5";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
+    //currently final, might change this at some point
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10, new HandlerThreadFactory("web7-handler-%d"));
 
     public WebServer(int port) {
         this.PORT = port;
-    }
-
-    private void handleRequest(Socket socket) throws IOException {
-        InputStreamReader in = new InputStreamReader(socket.getInputStream());
-        BufferedReader bufferedReader = new BufferedReader(in);
-        PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
-        String[] split = bufferedReader.readLine().split("\\s+");
-        Response response = new Response();
-        String method = split[0].toUpperCase(Locale.ROOT);
-        String endpoint = split[1].split("\\?")[0];
-        String protocol = split[2];
-        Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, null);
-        if (endpoints.containsKey(endpoint)) {
-            WebEndpointData endpointData = endpoints.get(endpoint);
-            request.setEndpointData(endpointData);
-            if (method.equals(endpointData.getRequestMethod()) || method.equals("OPTIONS") || method.equals("HEAD") || endpointData.getRequestMethod().equalsIgnoreCase("ANY")) {
-                switch (method) {
-                    case "TRACE":
-                        TRACE_ENDPOINT_HANDLER.handle(request, response);
-                        break;
-                    case "OPTIONS":
-                        if (endpointData.getRequestMethod().equals("OPTIONS") && endpointData.getHandler() != null)
-                            endpointData.getHandler().handle(request, response);
-                        else OPTIONS_ENDPOINT_HANDLER.handle(request, response);
-                        break;
-                    default:
-                        WebEndpointHandler handler = endpointData.getHandler();
-                        if (handler != null) handler.handle(request, response);
-                        //HEAD requests shouldn't return body
-                        if (method.toUpperCase(Locale.ROOT).equals("HEAD")) {
-                            response.setBody(null);
-                            response.setContentType(null);
-                            response.getHeaders().remove("Content-Length");
-                        }
-                        break;
-                }
-            } else {
-                if (methodNotAllowedHandler != null) methodNotAllowedHandler.handle(request, response);
-                //code should be forced in both cases
-                response.setStatus(HttpStatus.METHOD_NOT_ALLOWED);
-            }
-        } else {
-            if (routeNotFoundHandler != null) routeNotFoundHandler.handle(request, response);
-            response.setStatus(HttpStatus.NOT_FOUND);
-        }
-        ParsingUtils.parseResponse(response, printWriter, protocol);
     }
 
     public void trace(String path) {
@@ -112,7 +70,7 @@ public class WebServer implements Runnable {
             ServerSocket serverSocket = new ServerSocket(PORT);
             while (true) {
                 Socket socket = serverSocket.accept();
-                handleRequest(socket);
+                executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
             }
         } catch (IOException e) {
             e.printStackTrace();
