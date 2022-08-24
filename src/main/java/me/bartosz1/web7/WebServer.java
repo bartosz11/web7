@@ -20,12 +20,17 @@ public class WebServer implements Runnable {
     public static final String BRAND = "web7/0.0.5";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
-    private Thread mainThread;
     //currently final, might change this at some point
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10, new HandlerThreadFactory("web7-handler-%d"));
+    private final ExecutorService executorService;
 
     public WebServer(int port) {
         this.PORT = port;
+        executorService = Executors.newFixedThreadPool(10, new HandlerThreadFactory("web7-handler-%d"));
+    }
+
+    public WebServer(int port, int handlerThreadAmt) {
+        this.PORT = port;
+        executorService = Executors.newFixedThreadPool(handlerThreadAmt, new HandlerThreadFactory("web7-handler-%d"));
     }
 
     public void trace(String path) {
@@ -57,7 +62,7 @@ public class WebServer implements Runnable {
     }
 
     public WebServer start() {
-        mainThread = new Thread(this, "web7-main");
+        Thread mainThread = new Thread(this, "web7-main");
         mainThread.start();
         addShutdownHook(this);
         return this;
@@ -66,7 +71,6 @@ public class WebServer implements Runnable {
     public void shutdown() {
         endpoints.clear();
         executorService.shutdown();
-
     }
 
     @Override
