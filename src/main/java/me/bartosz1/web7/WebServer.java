@@ -61,6 +61,10 @@ public class WebServer implements Runnable {
         addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("ANY").setHandler(handler));
     }
 
+    public void unmap(String path) {
+        endpoints.remove(path);
+    }
+
     private void addEndpoint(String path, WebEndpointData endpointData) {
         endpoints.put(path, endpointData);
     }
