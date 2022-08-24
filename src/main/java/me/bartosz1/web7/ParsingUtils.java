@@ -42,7 +42,7 @@ public class ParsingUtils {
             }
             headers.put(lineSplit[0], value.toString());
             if (headerName.toLowerCase(Locale.ROOT).startsWith("content-length"))
-                contentLength = Integer.parseInt(value.toString());
+                contentLength = Integer.parseInt(value.toString().trim());
             if (headerName.toLowerCase(Locale.ROOT).startsWith("user-agent"))
                 userAgent = value.toString();
         }

@@ -17,7 +17,7 @@ public class WebServer implements Runnable {
     private final HashMap<String, WebEndpointData> endpoints = new HashMap<>();
     private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
-    public static final String BRAND = "web7/0.0.5";
+    public static final String BRAND = "web7/0.0.6";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
@@ -55,6 +55,10 @@ public class WebServer implements Runnable {
 
     public void options(String path, WebEndpointHandler handler) {
         addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("OPTIONS").setHandler(handler));
+    }
+
+    public void any(String path, WebEndpointHandler handler) {
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("ANY").setHandler(handler));
     }
 
     private void addEndpoint(String path, WebEndpointData endpointData) {
