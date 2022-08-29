@@ -30,24 +30,23 @@ public class RequestHandleTask implements Runnable {
     @Override
     public void run() {
         try {
-            InputStreamReader in = new InputStreamReader(socket.getInputStream());
-            BufferedReader bufferedReader = new BufferedReader(in);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
             String[] split = bufferedReader.readLine().split("\\s+");
-            Response response = new Response();
-            String method = split[0].toUpperCase(Locale.ROOT);
+            HttpRequestMethod method = HttpRequestMethod.valueOf(split[0].toUpperCase(Locale.ROOT));
             String endpoint = split[1].split("\\?")[0];
             String protocol = split[2];
             WebEndpointData endpointData = findEndpoint(endpoint);
             Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
+            Response response = new Response();
             if (endpointData != null) {
-                if (method.equals(endpointData.getRequestMethod()) || method.equals("OPTIONS") || method.equals("HEAD") || endpointData.getRequestMethod().equalsIgnoreCase("ANY")) {
+                if (method == endpointData.getRequestMethod() || method == HttpRequestMethod.OPTIONS || method == HttpRequestMethod.HEAD || endpointData.getRequestMethod() == HttpRequestMethod.ANY) {
                     switch (method) {
-                        case "TRACE":
+                        case TRACE:
                             TRACE_ENDPOINT_HANDLER.handle(request, response);
                             break;
-                        case "OPTIONS":
-                            if (endpointData.getRequestMethod().equals("OPTIONS") && endpointData.getHandler() != null)
+                        case OPTIONS:
+                            if (endpointData.getRequestMethod() == HttpRequestMethod.OPTIONS && endpointData.getHandler() != null)
                                 endpointData.getHandler().handle(request, response);
                             else OPTIONS_ENDPOINT_HANDLER.handle(request, response);
                             break;
@@ -55,7 +54,7 @@ public class RequestHandleTask implements Runnable {
                             WebEndpointHandler handler = endpointData.getHandler();
                             if (handler != null) handler.handle(request, response);
                             //HEAD requests shouldn't return body
-                            if (method.toUpperCase(Locale.ROOT).equals("HEAD")) {
+                            if (method == HttpRequestMethod.HEAD) {
                                 response.setBody(null);
                                 response.setContentType(null);
                                 response.getHeaders().remove("Content-Length");

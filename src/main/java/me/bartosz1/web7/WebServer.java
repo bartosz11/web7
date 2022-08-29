@@ -14,7 +14,7 @@ public class WebServer implements Runnable {
 
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
-    public static final String BRAND = "web7/0.0.6";
+    public static final String BRAND = "web7/0.0.7";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
@@ -22,7 +22,7 @@ public class WebServer implements Runnable {
 
     public WebServer(int port) {
         this.PORT = port;
-        executorService = Executors.newFixedThreadPool(10, new HandlerThreadFactory("web7-handler-%d"));
+        executorService = Executors.newFixedThreadPool(5, new HandlerThreadFactory("web7-handler-%d"));
     }
 
     public WebServer(int port, int handlerThreadAmt) {
@@ -31,31 +31,31 @@ public class WebServer implements Runnable {
     }
 
     public void trace(String path) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("TRACE"));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.TRACE));
     }
 
     public void get(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("GET").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.GET).setHandler(handler));
     }
 
     public void post(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("POST").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.POST).setHandler(handler));
     }
 
     public void put(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("PUT").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.PUT).setHandler(handler));
     }
 
     public void delete(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("PUT").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.DELETE).setHandler(handler));
     }
 
     public void options(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("OPTIONS").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.OPTIONS).setHandler(handler));
     }
 
     public void any(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod("ANY").setHandler(handler));
+        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.ANY).setHandler(handler));
     }
 
     public void unmap(String path) {
@@ -115,6 +115,9 @@ public class WebServer implements Runnable {
         return this;
     }
 
+    //Suppressed so IntellIJ stops crying, needs to be done this way if I want to keep compatibility with Java 7 / older Android API versions
+    //(compatibility might be dropped if Google deprecates Android APIs lower than 24)
+    @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
     private void addShutdownHook(WebServer webServer) {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override

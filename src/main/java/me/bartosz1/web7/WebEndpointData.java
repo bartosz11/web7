@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class WebEndpointData {
 
     private WebEndpointHandler handler;
-    private String requestMethod;
+    private HttpRequestMethod requestMethod;
     private String endpoint;
     private final HashMap<String, Integer> pathVariables = new HashMap<>();
 
@@ -16,19 +16,12 @@ public class WebEndpointData {
         return this;
     }
 
-    public WebEndpointData setRequestMethod(String requestMethod) {
-        this.requestMethod = requestMethod;
-        return this;
-    }
 
     public WebEndpointData setEndpoint(String endpoint) {
         this.endpoint = endpoint;
         return this;
     }
 
-    public String getRequestMethod() {
-        return requestMethod;
-    }
 
 
     public WebEndpointHandler getHandler() {
@@ -42,5 +35,14 @@ public class WebEndpointData {
 
     public HashMap<String, Integer> getPathVariables() {
         return pathVariables;
+    }
+
+    public HttpRequestMethod getRequestMethod() {
+        return requestMethod;
+    }
+
+    public WebEndpointData setRequestMethod(HttpRequestMethod requestMethod) {
+        this.requestMethod = requestMethod;
+        return this;
     }
 }

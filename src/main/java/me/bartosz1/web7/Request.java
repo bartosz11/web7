@@ -6,23 +6,23 @@ import java.util.Map;
 public class Request {
 
     private final Map<String, String> headers;
-    private final Object body;
+    private final String body;
     private final InetAddress remoteAddress;
     private final String userAgent;
-    private final String requestMethod;
+    private final HttpRequestMethod requestMethod;
     private final String protocol;
     private final String path;
-    private WebEndpointData endpointData;
+    private final WebEndpointData endpointData;
     private final Map<String, String> urlParams;
     private final Map<String, String> pathVariables;
     private final String rawRequest;
 
-    public Request(Map<String, String> headers, Object body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, Map<String, String> pathVariables, String rawRequest) {
+    public Request(Map<String, String> headers, String body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, Map<String, String> pathVariables, String rawRequest) {
         this.headers = headers;
         this.body = body;
         this.remoteAddress = remoteAddress;
         this.userAgent = userAgent;
-        this.requestMethod = split[0];
+        this.requestMethod = HttpRequestMethod.valueOf(split[0]);
         this.protocol = split[2];
         this.path = split[1];
         this.pathVariables = pathVariables;
@@ -31,7 +31,7 @@ public class Request {
         this.rawRequest = rawRequest;
     }
 
-    public Object getBody() {
+    public String getBody() {
         return body;
     }
 
@@ -39,7 +39,7 @@ public class Request {
         return headers;
     }
 
-    public String getRequestMethod() {
+    public HttpRequestMethod getRequestMethod() {
         return requestMethod;
     }
 

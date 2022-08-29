@@ -1,6 +1,7 @@
 package me.bartosz1.web7;
 
 import java.io.File;
+
 @SuppressWarnings("unused")
 //Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 //All from above are listed here except .3gp and .3g2
@@ -31,7 +32,7 @@ public enum MimeType {
         String[] split = file.getName().split("\\.");
         String last = split[split.length - 1];
         try {
-            if (last.toUpperCase().equalsIgnoreCase("7Z")) return SEVENZIP;
+            if (last.equalsIgnoreCase("7Z")) return SEVENZIP;
             return valueOf(last.toUpperCase());
         } catch (IllegalArgumentException e) {
             return OTHER;

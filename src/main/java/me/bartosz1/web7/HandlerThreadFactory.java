@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HandlerThreadFactory implements ThreadFactory {
     private final String namingScheme;
     private final AtomicInteger counter = new AtomicInteger();
+
     public HandlerThreadFactory(String namingScheme) {
         this.namingScheme = namingScheme;
     }
