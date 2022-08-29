@@ -1,7 +1,5 @@
 package me.bartosz1.web7;
 
-import me.bartosz1.web7.handlers.OptionsEndpointHandler;
-import me.bartosz1.web7.handlers.TraceEndpointHandler;
 import me.bartosz1.web7.handlers.WebEndpointHandler;
 
 import java.io.IOException;
@@ -10,13 +8,12 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
     private final int PORT;
-    private final HashMap<String, WebEndpointData> endpoints = new HashMap<>();
-    private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
-    private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
+    private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
     public static final String BRAND = "web7/0.0.6";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
@@ -62,11 +59,21 @@ public class WebServer implements Runnable {
     }
 
     public void unmap(String path) {
-        endpoints.remove(path);
+        endpoints.remove(Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)")));
     }
 
     private void addEndpoint(String path, WebEndpointData endpointData) {
-        endpoints.put(path, endpointData);
+        String[] split = path.split("/");
+        for (int i = 0; i < split.length; i++) {
+            String current = split[i];
+            int index = current.indexOf('$');
+            if (index != -1) {
+                String name = current.substring(index + 1);
+                endpointData.getPathVariables().put(name, i);
+            }
+        }
+        Pattern key = Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)"));
+        endpoints.put(key, endpointData);
     }
 
     public WebServer start() {
@@ -91,7 +98,7 @@ public class WebServer implements Runnable {
                 } else {
                     serverSocket.close();
                     break;
-                };
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

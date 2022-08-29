@@ -58,8 +58,16 @@ public class ParsingUtils {
                 if (body.length() == contentLength) break;
             }
         }
+        HashMap<String, String> pathVars = new HashMap<>();
+        if (endpointData != null) {
+            String[] split = reqResSplit[0].split("/");
+            List<Map.Entry<String, Integer>> entries = new ArrayList<>(endpointData.getPathVariables().entrySet());
+            for (Map.Entry<String, Integer> stringIntegerEntry : entries) {
+                pathVars.put(stringIntegerEntry.getKey(), split[stringIntegerEntry.getValue()]);
+            }
+        }
         //Finally return request
-        return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, firstLineSplit, endpointData, Collections.unmodifiableMap(urlParams), rawRequest.toString());
+        return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, firstLineSplit, endpointData, Collections.unmodifiableMap(urlParams), Collections.unmodifiableMap(pathVars), rawRequest.toString());
     }
 
     public static void parseResponse(Response response, PrintWriter printWriter, String protocol) {

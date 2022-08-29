@@ -9,18 +9,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class RequestHandleTask implements Runnable {
     private final Socket socket;
-    private final HashMap<String, WebEndpointData> endpoints;
+    private final HashMap<Pattern, WebEndpointData> endpoints;
     private final WebEndpointHandler methodNotAllowedHandler;
     private final WebEndpointHandler routeNotFoundHandler;
     private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
 
-    public RequestHandleTask(Socket socket, HashMap<String, WebEndpointData> endpoints, WebEndpointHandler methodNotAllowedHandler, WebEndpointHandler routeNotFoundHandler) {
+    public RequestHandleTask(Socket socket, HashMap<Pattern, WebEndpointData> endpoints, WebEndpointHandler methodNotAllowedHandler, WebEndpointHandler routeNotFoundHandler) {
         this.socket = socket;
         this.endpoints = endpoints;
         this.methodNotAllowedHandler = methodNotAllowedHandler;
@@ -38,10 +38,9 @@ public class RequestHandleTask implements Runnable {
             String method = split[0].toUpperCase(Locale.ROOT);
             String endpoint = split[1].split("\\?")[0];
             String protocol = split[2];
-            Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, null);
-            if (endpoints.containsKey(endpoint)) {
-                WebEndpointData endpointData = endpoints.get(endpoint);
-                request.setEndpointData(endpointData);
+            WebEndpointData endpointData = findEndpoint(endpoint);
+            Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
+            if (endpointData != null) {
                 if (method.equals(endpointData.getRequestMethod()) || method.equals("OPTIONS") || method.equals("HEAD") || endpointData.getRequestMethod().equalsIgnoreCase("ANY")) {
                     switch (method) {
                         case "TRACE":
@@ -74,6 +73,18 @@ public class RequestHandleTask implements Runnable {
             }
             ParsingUtils.parseResponse(response, printWriter, protocol);
             //we probably should do something here
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
+    }
+
+    private WebEndpointData findEndpoint(String path) {
+        List<Map.Entry<Pattern, WebEndpointData>> entries = new ArrayList<>(endpoints.entrySet());
+        for (Map.Entry<Pattern, WebEndpointData> entry : entries) {
+            Pattern key = entry.getKey();
+            if (key.matcher(path).matches()) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 }

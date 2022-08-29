@@ -13,11 +13,11 @@ public class Request {
     private final String protocol;
     private final String path;
     private WebEndpointData endpointData;
-    private final Map<String, String> params;
+    private final Map<String, String> urlParams;
+    private final Map<String, String> pathVariables;
     private final String rawRequest;
-    private boolean endpointDataSet = false;
 
-    public Request(Map<String, String> headers, Object body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, String rawRequest) {
+    public Request(Map<String, String> headers, Object body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, Map<String, String> pathVariables, String rawRequest) {
         this.headers = headers;
         this.body = body;
         this.remoteAddress = remoteAddress;
@@ -25,11 +25,9 @@ public class Request {
         this.requestMethod = split[0];
         this.protocol = split[2];
         this.path = split[1];
-        if (endpointData != null) {
-            this.endpointData = endpointData;
-            this.endpointDataSet = true;
-        }
-        this.params = params;
+        this.pathVariables = pathVariables;
+        this.endpointData = endpointData;
+        this.urlParams = params;
         this.rawRequest = rawRequest;
     }
 
@@ -65,19 +63,15 @@ public class Request {
         return endpointData;
     }
 
-    public Map<String, String> getParams() {
-        return params;
+    public Map<String, String> getUrlParameters() {
+        return urlParams;
     }
 
     public String getRawRequest() {
         return rawRequest;
     }
-    //will work only one time, object is read only
-    public Request setEndpointData(WebEndpointData endpointData) {
-        if (!endpointDataSet) {
-            this.endpointData = endpointData;
-            this.endpointDataSet = true;
-        }
-        return this;
+
+    public Map<String, String> getPathVariables() {
+        return pathVariables;
     }
 }
