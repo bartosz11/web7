@@ -14,18 +14,21 @@ public class WebServer implements Runnable {
 
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
-    public static final String BRAND = "web7/0.0.7";
+    public static final String BRAND = "web7/0.0.8";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
     private final ExecutorService executorService;
+    private boolean started = false;
 
     public WebServer(int port) {
+        validatePort(port);
         this.PORT = port;
         executorService = Executors.newFixedThreadPool(5, new HandlerThreadFactory("web7-handler-%d"));
     }
 
     public WebServer(int port, int handlerThreadAmt) {
+        validatePort(port);
         this.PORT = port;
         executorService = Executors.newFixedThreadPool(handlerThreadAmt, new HandlerThreadFactory("web7-handler-%d"));
     }
@@ -63,23 +66,27 @@ public class WebServer implements Runnable {
     }
 
     private void addEndpoint(String path, WebEndpointData endpointData) {
-        String[] split = path.split("/");
-        for (int i = 0; i < split.length; i++) {
-            String current = split[i];
-            int index = current.indexOf('$');
-            if (index != -1) {
-                String name = current.substring(index + 1);
-                endpointData.getPathVariables().put(name, i);
-            }
-        }
         Pattern key = Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)"));
-        endpoints.put(key, endpointData);
+        if (!endpoints.containsKey(key)) {
+            String[] split = path.split("/");
+            for (int i = 0; i < split.length; i++) {
+                String current = split[i];
+                int index = current.indexOf('$');
+                if (index != -1) {
+                    String name = current.substring(index + 1);
+                    endpointData.getPathVariables().put(name, i);
+                }
+            }
+            endpoints.put(key, endpointData);
+        } else throw new IllegalArgumentException("Mapping "+path+" is already present");
     }
 
     public WebServer start() {
+        if (started) throw new IllegalStateException("Webserver has already started! (WebServer class instance can't be reused once shut down)");
         Thread mainThread = new Thread(this, "web7-main");
         mainThread.start();
         addShutdownHook(this);
+        started = true;
         return this;
     }
 
@@ -125,6 +132,11 @@ public class WebServer implements Runnable {
                 webServer.shutdown();
             }
         }));
+    }
+
+    //Technically I can just use short and check if it's negative only but shorts are kinda inconvenient
+    private void validatePort(int port) {
+        if (port < 1 || port > 65535) throw new IllegalArgumentException("Invalid port: "+port+" (range of valid ports: 1-65535)");
     }
 
 }

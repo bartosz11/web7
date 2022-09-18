@@ -32,12 +32,13 @@ public class RequestHandleTask implements Runnable {
         try {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter printWriter = new PrintWriter(socket.getOutputStream());
-            String[] split = bufferedReader.readLine().split("\\s+");
-            HttpRequestMethod method = HttpRequestMethod.valueOf(split[0].toUpperCase(Locale.ROOT));
-            String endpoint = split[1].split("\\?")[0];
-            String protocol = split[2];
+            StringTokenizer tokenizer = new StringTokenizer(bufferedReader.readLine());
+            HttpRequestMethod method = HttpRequestMethod.valueOf(tokenizer.nextToken().toUpperCase(Locale.ROOT));
+            String s = tokenizer.nextToken();
+            String endpoint = s.split("\\?")[0];
+            String protocol = tokenizer.nextToken();
             WebEndpointData endpointData = findEndpoint(endpoint);
-            Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), split, endpointData);
+            Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), method, s, protocol, endpointData);
             Response response = new Response();
             if (endpointData != null) {
                 if (method == endpointData.getRequestMethod() || method == HttpRequestMethod.OPTIONS || method == HttpRequestMethod.HEAD || endpointData.getRequestMethod() == HttpRequestMethod.ANY) {

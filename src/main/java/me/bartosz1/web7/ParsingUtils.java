@@ -9,30 +9,29 @@ import java.util.*;
 
 public class ParsingUtils {
 
-    public static Request parseRequest(BufferedReader bufferedReader, InetAddress addr, String[] firstLineSplit, WebEndpointData endpointData) throws IOException {
+    public static Request parseRequest(BufferedReader bufferedReader, InetAddress addr, HttpRequestMethod requestMethod, String requestedResource, String protocol, WebEndpointData endpointData) throws IOException {
         StringBuilder rawRequest = new StringBuilder();
-        rawRequest.append(String.join(" ", firstLineSplit)).append("\n");
-        String userAgent = "";
-        Map<String, String> headers = new HashMap<>();
-        int contentLength = 0;
+        rawRequest.append(requestMethod.toString()).append(" ").append(requestedResource).append(" ").append(protocol).append("\n");
         //Parse request parameters
         Map<String, String> urlParams = new HashMap<>();
-        String requestedResource = firstLineSplit[1];
         String[] reqResSplit = requestedResource.split("\\?");
         //means we got any param
         if (reqResSplit.length > 1) {
-            String[] params = reqResSplit[1].split("&");
-            for (String param : params) {
-                String[] paramSplit = param.split("=");
-                urlParams.put(URLDecoder.decode(paramSplit[0], "UTF-8"), URLDecoder.decode(paramSplit[1], "UTF-8"));
+            StringTokenizer params = new StringTokenizer(reqResSplit[1], "&");
+            while (params.hasMoreTokens()) {
+                StringTokenizer param = new StringTokenizer(params.nextToken(), "=");
+                urlParams.put(URLDecoder.decode(param.nextToken(), "UTF-8"), URLDecoder.decode(param.nextToken(), "UTF-8"));
             }
         }
+        String userAgent = "";
+        Map<String, String> headers = new HashMap<>();
+        int contentLength = 0;
         //Parse headers
         String line;
         while ((line = bufferedReader.readLine()) != null) {
+            rawRequest.append(line).append("\n");
             //means end of headers
             if (line.isEmpty()) break;
-            rawRequest.append(line).append("\n");
             //Parse header, there might be a better solution lol
             String[] lineSplit = line.split(":");
             String headerName = lineSplit[0];
@@ -40,7 +39,7 @@ public class ParsingUtils {
             for (int i = 1; i < lineSplit.length; i++) {
                 value.append(lineSplit[i]);
             }
-            headers.put(lineSplit[0], value.toString());
+            headers.put(headerName, value.toString());
             if (headerName.toLowerCase(Locale.ROOT).startsWith("content-length"))
                 contentLength = Integer.parseInt(value.toString().trim());
             if (headerName.toLowerCase(Locale.ROOT).startsWith("user-agent"))
@@ -49,7 +48,7 @@ public class ParsingUtils {
         //Parse body
         StringBuilder body = new StringBuilder();
         //means we got some body
-        if (contentLength > 0 && !firstLineSplit[0].equals("TRACE")) {
+        if (contentLength > 0 && !(requestMethod == HttpRequestMethod.TRACE)) {
             int read;
             //-1 means should mean EOF
             while ((read = bufferedReader.read()) != -1) {
@@ -67,7 +66,7 @@ public class ParsingUtils {
             }
         }
         //Finally return request
-        return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, firstLineSplit, endpointData, Collections.unmodifiableMap(urlParams), Collections.unmodifiableMap(pathVars), rawRequest.toString());
+        return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, requestMethod, protocol, requestedResource, endpointData, Collections.unmodifiableMap(urlParams), Collections.unmodifiableMap(pathVars), rawRequest.toString());
     }
 
     public static void parseResponse(Response response, PrintWriter printWriter, String protocol) {
@@ -81,6 +80,7 @@ public class ParsingUtils {
         for (Map.Entry<String, String> entry : entries) {
             printWriter.println(entry.getKey() + ": " + entry.getValue());
         }
+        //CRLF
         printWriter.println();
         //dunno if that check should be here actually
         //but why would I ever want to return empty/null body?

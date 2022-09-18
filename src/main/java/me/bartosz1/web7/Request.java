@@ -17,14 +17,14 @@ public class Request {
     private final Map<String, String> pathVariables;
     private final String rawRequest;
 
-    public Request(Map<String, String> headers, String body, InetAddress remoteAddress, String userAgent, String[] split, WebEndpointData endpointData, Map<String, String> params, Map<String, String> pathVariables, String rawRequest) {
+    public Request(Map<String, String> headers, String body, InetAddress remoteAddress, String userAgent, HttpRequestMethod requestMethod, String protocol, String path, WebEndpointData endpointData, Map<String, String> params, Map<String, String> pathVariables, String rawRequest) {
         this.headers = headers;
         this.body = body;
         this.remoteAddress = remoteAddress;
         this.userAgent = userAgent;
-        this.requestMethod = HttpRequestMethod.valueOf(split[0]);
-        this.protocol = split[2];
-        this.path = split[1];
+        this.requestMethod = requestMethod;
+        this.protocol = protocol;
+        this.path = path;
         this.pathVariables = pathVariables;
         this.endpointData = endpointData;
         this.urlParams = params;
