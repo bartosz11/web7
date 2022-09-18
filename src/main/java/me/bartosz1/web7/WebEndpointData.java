@@ -2,47 +2,35 @@ package me.bartosz1.web7;
 
 import me.bartosz1.web7.handlers.WebEndpointHandler;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class WebEndpointData {
 
-    private WebEndpointHandler handler;
-    private HttpRequestMethod requestMethod;
-    private String endpoint;
-    private final HashMap<String, Integer> pathVariables = new HashMap<>();
+    private final WebEndpointHandler handler;
+    private final HttpRequestMethod requestMethod;
+    private final String endpoint;
+    private final Map<String, Integer> pathVariableIndexes;
 
-    public WebEndpointData setHandler(WebEndpointHandler handler) {
+    public WebEndpointData(WebEndpointHandler handler, HttpRequestMethod requestMethod, String endpoint, Map<String, Integer> pathVariables) {
         this.handler = handler;
-        return this;
-    }
-
-
-    public WebEndpointData setEndpoint(String endpoint) {
+        this.requestMethod = requestMethod;
         this.endpoint = endpoint;
-        return this;
+        this.pathVariableIndexes = pathVariables;
     }
-
-
-
-    public WebEndpointHandler getHandler() {
-        return handler;
-    }
-
 
     public String getEndpoint() {
         return endpoint;
-    }
-
-    public HashMap<String, Integer> getPathVariables() {
-        return pathVariables;
     }
 
     public HttpRequestMethod getRequestMethod() {
         return requestMethod;
     }
 
-    public WebEndpointData setRequestMethod(HttpRequestMethod requestMethod) {
-        this.requestMethod = requestMethod;
-        return this;
+    public WebEndpointHandler getHandler() {
+        return handler;
+    }
+
+    public Map<String, Integer> getPathVariableIndexes() {
+        return pathVariableIndexes;
     }
 }

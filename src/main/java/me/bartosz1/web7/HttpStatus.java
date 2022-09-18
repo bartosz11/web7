@@ -34,7 +34,7 @@ public enum HttpStatus {
         StringBuilder sb = new StringBuilder();
         switch (code) {
             //There's some kind of rule in HTTP codes, each word starts with uppercase letter
-            //Branches other than default are exceptions to this rule, or they wouldn't work properly with the logic in default branch
+            //Branches other than default are exceptions to this rule
             case 200:
                 sb.append("200 OK");
                 break;

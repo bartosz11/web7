@@ -60,7 +60,7 @@ public class ParsingUtils {
         HashMap<String, String> pathVars = new HashMap<>();
         if (endpointData != null) {
             String[] split = reqResSplit[0].split("/");
-            List<Map.Entry<String, Integer>> entries = new ArrayList<>(endpointData.getPathVariables().entrySet());
+            List<Map.Entry<String, Integer>> entries = new ArrayList<>(endpointData.getPathVariableIndexes().entrySet());
             for (Map.Entry<String, Integer> stringIntegerEntry : entries) {
                 pathVars.put(stringIntegerEntry.getKey(), split[stringIntegerEntry.getValue()]);
             }
@@ -82,8 +82,6 @@ public class ParsingUtils {
         }
         //CRLF
         printWriter.println();
-        //dunno if that check should be here actually
-        //but why would I ever want to return empty/null body?
         if (response.getBody() != null && !response.getBody().isEmpty())
             printWriter.println(response.getBody());
         printWriter.close();

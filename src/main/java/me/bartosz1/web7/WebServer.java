@@ -5,6 +5,7 @@ import me.bartosz1.web7.handlers.WebEndpointHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,39 +35,40 @@ public class WebServer implements Runnable {
     }
 
     public void trace(String path) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.TRACE));
+        addEndpoint(path, HttpRequestMethod.TRACE, null);
     }
 
     public void get(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.GET).setHandler(handler));
+        addEndpoint(path, HttpRequestMethod.GET, handler);
     }
 
     public void post(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.POST).setHandler(handler));
+        addEndpoint(path, HttpRequestMethod.POST, handler);
     }
 
     public void put(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.PUT).setHandler(handler));
+        addEndpoint(path, HttpRequestMethod.PUT, handler);
     }
 
     public void delete(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.DELETE).setHandler(handler));
+        addEndpoint(path, HttpRequestMethod.DELETE, handler);
     }
 
     public void options(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.OPTIONS).setHandler(handler));
+        addEndpoint(path, HttpRequestMethod.OPTIONS, handler);
     }
 
     public void any(String path, WebEndpointHandler handler) {
-        addEndpoint(path, new WebEndpointData().setEndpoint(path).setRequestMethod(HttpRequestMethod.ANY).setHandler(handler));
+        addEndpoint(path, HttpRequestMethod.ANY, handler);
     }
 
     public void unmap(String path) {
         endpoints.remove(Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)")));
     }
 
-    private void addEndpoint(String path, WebEndpointData endpointData) {
+    private void addEndpoint(String path, HttpRequestMethod requestMethod, WebEndpointHandler handler) {
         Pattern key = Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)"));
+        HashMap<String, Integer> pathVariableIndexes = new HashMap<>();
         if (!endpoints.containsKey(key)) {
             String[] split = path.split("/");
             for (int i = 0; i < split.length; i++) {
@@ -74,15 +76,17 @@ public class WebServer implements Runnable {
                 int index = current.indexOf('$');
                 if (index != -1) {
                     String name = current.substring(index + 1);
-                    endpointData.getPathVariables().put(name, i);
+                    pathVariableIndexes.put(name, i);
                 }
             }
+            WebEndpointData endpointData = new WebEndpointData(handler, requestMethod, path, Collections.unmodifiableMap(pathVariableIndexes));
             endpoints.put(key, endpointData);
-        } else throw new IllegalArgumentException("Mapping "+path+" is already present");
+        } else throw new IllegalArgumentException("Mapping " + path + " is already present");
     }
 
     public WebServer start() {
-        if (started) throw new IllegalStateException("Webserver has already started! (WebServer class instance can't be reused once shut down)");
+        if (started)
+            throw new IllegalStateException("Webserver has already started! (WebServer class instance can't be reused once shut down)");
         Thread mainThread = new Thread(this, "web7-main");
         mainThread.start();
         addShutdownHook(this);
@@ -136,7 +140,8 @@ public class WebServer implements Runnable {
 
     //Technically I can just use short and check if it's negative only but shorts are kinda inconvenient
     private void validatePort(int port) {
-        if (port < 1 || port > 65535) throw new IllegalArgumentException("Invalid port: "+port+" (range of valid ports: 1-65535)");
+        if (port < 1 || port > 65535)
+            throw new IllegalArgumentException("Invalid port: " + port + " (range of valid ports: 1-65535)");
     }
 
 }
