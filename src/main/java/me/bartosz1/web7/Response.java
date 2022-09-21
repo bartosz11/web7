@@ -82,4 +82,9 @@ public class Response {
         } else throw new IllegalStateException("File is unreadable!");
         return this;
     }
+
+    public Response setHeader(String name, String value) {
+        headers.put(name, value);
+        return this;
+    }
 }

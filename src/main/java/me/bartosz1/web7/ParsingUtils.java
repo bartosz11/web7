@@ -50,7 +50,7 @@ public class ParsingUtils {
         //means we got some body
         if (contentLength > 0 && !(requestMethod == HttpRequestMethod.TRACE)) {
             int read;
-            //-1 means should mean EOF
+            //-1 should mean EOF
             while ((read = bufferedReader.read()) != -1) {
                 body.append((char) read);
                 //break loop if declared content length is reached
@@ -58,7 +58,7 @@ public class ParsingUtils {
             }
         }
         HashMap<String, String> pathVars = new HashMap<>();
-        if (endpointData != null) {
+        if (endpointData != null && !endpointData.getPathVariableIndexes().isEmpty()) {
             String[] split = reqResSplit[0].split("/");
             List<Map.Entry<String, Integer>> entries = new ArrayList<>(endpointData.getPathVariableIndexes().entrySet());
             for (Map.Entry<String, Integer> stringIntegerEntry : entries) {

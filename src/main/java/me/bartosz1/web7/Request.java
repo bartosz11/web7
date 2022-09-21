@@ -35,10 +35,6 @@ public class Request {
         return body;
     }
 
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
     public HttpRequestMethod getRequestMethod() {
         return requestMethod;
     }
@@ -63,15 +59,32 @@ public class Request {
         return endpointData;
     }
 
-    public Map<String, String> getUrlParameters() {
-        return urlParams;
-    }
-
     public String getRawRequest() {
         return rawRequest;
+    }
+
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public String getURLParameter(String name) {
+        return urlParams.get(name);
+    }
+
+    public String getPathVariable(String name) {
+        return pathVariables.get(name);
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public Map<String, String> getURLParameters() {
+        return urlParams;
     }
 
     public Map<String, String> getPathVariables() {
         return pathVariables;
     }
+
 }

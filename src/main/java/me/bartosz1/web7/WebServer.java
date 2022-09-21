@@ -15,7 +15,7 @@ public class WebServer implements Runnable {
 
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
-    public static final String BRAND = "web7/0.0.8";
+    public static final String BRAND = "web7/0.0.9";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
@@ -102,14 +102,9 @@ public class WebServer implements Runnable {
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            while (true) {
-                if (!executorService.isShutdown()) {
-                    Socket socket = serverSocket.accept();
-                    executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
-                } else {
-                    serverSocket.close();
-                    break;
-                }
+            while (!executorService.isShutdown()) {
+                Socket socket = serverSocket.accept();
+                executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
             }
         } catch (IOException e) {
             e.printStackTrace();

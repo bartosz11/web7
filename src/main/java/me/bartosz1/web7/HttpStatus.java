@@ -2,6 +2,7 @@ package me.bartosz1.web7;
 
 
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 //WebDAV codes aren't present here
 //No, this enum isn't copied from Spring's source code lol
@@ -30,7 +31,6 @@ public enum HttpStatus {
 
     @Override
     public String toString() {
-        String[] split = name().split("_");
         StringBuilder sb = new StringBuilder();
         switch (code) {
             //There's some kind of rule in HTTP codes, each word starts with uppercase letter
@@ -48,8 +48,10 @@ public enum HttpStatus {
                 sb.append("418 I'm a teapot");
                 break;
             default:
+                StringTokenizer tokenizer = new StringTokenizer(name(), "_");
                 sb.append(code).append(" ");
-                for (String current : split) {
+                while (tokenizer.hasMoreTokens()) {
+                    String current = tokenizer.nextToken();
                     sb.append(current.substring(0, 1).toUpperCase(Locale.ROOT)).append(current.substring(1).toLowerCase(Locale.ROOT));
                     sb.append(" ");
                 }
