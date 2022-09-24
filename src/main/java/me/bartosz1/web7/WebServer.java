@@ -5,8 +5,10 @@ import me.bartosz1.web7.handlers.WebEndpointHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
@@ -20,6 +22,9 @@ public class WebServer implements Runnable {
     private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
     private final ExecutorService executorService;
+
+    private final List<RequestFilter> beforeRequestFilters = new ArrayList<>();
+    private final List<RequestFilter> afterRequestFilters = new ArrayList<>();
     private boolean started = false;
 
     public WebServer(int port) {
@@ -95,8 +100,8 @@ public class WebServer implements Runnable {
     }
 
     public void shutdown() {
-        endpoints.clear();
         executorService.shutdown();
+        endpoints.clear();
     }
 
     @Override
@@ -104,7 +109,7 @@ public class WebServer implements Runnable {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             while (!executorService.isShutdown()) {
                 Socket socket = serverSocket.accept();
-                executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler));
+                executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler, beforeRequestFilters, afterRequestFilters));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -118,6 +123,36 @@ public class WebServer implements Runnable {
 
     public WebServer setRouteNotFoundHandler(WebEndpointHandler routeNotFoundHandler) {
         this.routeNotFoundHandler = routeNotFoundHandler;
+        return this;
+    }
+
+    public WebServer addBeforeRequestFilter(RequestFilter requestFilter) {
+        beforeRequestFilters.add(requestFilter);
+        return this;
+    }
+
+    public WebServer addBeforeRequestFilterBefore(RequestFilter requestFilter, RequestFilter before) {
+        beforeRequestFilters.add(beforeRequestFilters.indexOf(before), requestFilter);
+        return this;
+    }
+
+    public WebServer addBeforeRequestFilterAfter(RequestFilter requestFilter, RequestFilter after) {
+        beforeRequestFilters.add(beforeRequestFilters.indexOf(after)+1, requestFilter);
+        return this;
+    }
+
+    public WebServer addAfterRequestFilter(RequestFilter requestFilter) {
+        afterRequestFilters.add(requestFilter);
+        return this;
+    }
+
+    public WebServer addAfterRequestFilterBefore(RequestFilter requestFilter, RequestFilter before) {
+        afterRequestFilters.add(afterRequestFilters.indexOf(before), requestFilter);
+        return this;
+    }
+
+    public WebServer addAfterRequestFilterAfter(RequestFilter requestFilter, RequestFilter after) {
+        afterRequestFilters.add(afterRequestFilters.indexOf(after)+1, requestFilter);
         return this;
     }
 

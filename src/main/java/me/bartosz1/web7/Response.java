@@ -2,6 +2,7 @@ package me.bartosz1.web7;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,13 @@ public class Response {
     private String contentType = "text/plain";
     private String body;
     private HashMap<String, String> headers = new HashMap<>();
+    private final PrintWriter outputStream;
+    private final String protocol;
+
+    public Response(PrintWriter outputStream, String protocol) {
+        this.outputStream = outputStream;
+        this.protocol = protocol;
+    }
 
     public String getContentType() {
         return contentType;
@@ -86,5 +94,9 @@ public class Response {
     public Response setHeader(String name, String value) {
         headers.put(name, value);
         return this;
+    }
+    
+    public void send() {
+        ParsingUtils.parseResponse(this, outputStream, protocol);
     }
 }

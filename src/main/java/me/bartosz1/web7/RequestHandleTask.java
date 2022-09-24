@@ -20,11 +20,16 @@ public class RequestHandleTask implements Runnable {
     private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
     private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
 
-    public RequestHandleTask(Socket socket, HashMap<Pattern, WebEndpointData> endpoints, WebEndpointHandler methodNotAllowedHandler, WebEndpointHandler routeNotFoundHandler) {
+    private final List<RequestFilter> beforeFilters;
+    private final List<RequestFilter> afterFilters;
+
+    public RequestHandleTask(Socket socket, HashMap<Pattern, WebEndpointData> endpoints, WebEndpointHandler methodNotAllowedHandler, WebEndpointHandler routeNotFoundHandler, List<RequestFilter> beforeFilters, List<RequestFilter> afterFilters) {
         this.socket = socket;
         this.endpoints = endpoints;
         this.methodNotAllowedHandler = methodNotAllowedHandler;
         this.routeNotFoundHandler = routeNotFoundHandler;
+        this.beforeFilters = beforeFilters;
+        this.afterFilters = afterFilters;
     }
 
     @Override
@@ -39,9 +44,12 @@ public class RequestHandleTask implements Runnable {
             String protocol = tokenizer.nextToken();
             WebEndpointData endpointData = findEndpoint(endpoint);
             Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), method, s, protocol, endpointData);
-            Response response = new Response();
+            Response response = new Response(printWriter, protocol);
             if (endpointData != null) {
                 if (method == endpointData.getRequestMethod() || method == HttpRequestMethod.OPTIONS || method == HttpRequestMethod.HEAD || endpointData.getRequestMethod() == HttpRequestMethod.ANY) {
+                    for (RequestFilter filter : beforeFilters) {
+                        filter.filter(request, response);
+                    }
                     switch (method) {
                         case TRACE:
                             TRACE_ENDPOINT_HANDLER.handle(request, response);
@@ -61,6 +69,9 @@ public class RequestHandleTask implements Runnable {
                                 response.getHeaders().remove("Content-Length");
                             }
                             break;
+                    }
+                    for (RequestFilter filter : afterFilters) {
+                        filter.filter(request, response);
                     }
                 } else {
                     if (methodNotAllowedHandler != null) methodNotAllowedHandler.handle(request, response);
