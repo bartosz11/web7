@@ -48,7 +48,7 @@ public class RequestHandleTask implements Runnable {
             if (endpointData != null) {
                 if (method == endpointData.getRequestMethod() || method == HttpRequestMethod.OPTIONS || method == HttpRequestMethod.HEAD || endpointData.getRequestMethod() == HttpRequestMethod.ANY) {
                     for (RequestFilter filter : beforeFilters) {
-                        filter.filter(request, response);
+                        if (filter != null) filter.filter(request, response);
                     }
                     switch (method) {
                         case TRACE:
@@ -71,7 +71,7 @@ public class RequestHandleTask implements Runnable {
                             break;
                     }
                     for (RequestFilter filter : afterFilters) {
-                        filter.filter(request, response);
+                        if (filter != null) filter.filter(request, response);
                     }
                 } else {
                     if (methodNotAllowedHandler != null) methodNotAllowedHandler.handle(request, response);

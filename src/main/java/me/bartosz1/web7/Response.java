@@ -95,7 +95,7 @@ public class Response {
         headers.put(name, value);
         return this;
     }
-    
+
     public void send() {
         ParsingUtils.parseResponse(this, outputStream, protocol);
     }

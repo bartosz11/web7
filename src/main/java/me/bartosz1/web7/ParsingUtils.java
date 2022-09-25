@@ -35,15 +35,15 @@ public class ParsingUtils {
             //Parse header, there might be a better solution lol
             String[] lineSplit = line.split(":");
             String headerName = lineSplit[0];
-            StringBuilder value = new StringBuilder();
-            for (int i = 1; i < lineSplit.length; i++) {
-                value.append(lineSplit[i]);
-            }
-            headers.put(headerName, value.toString());
+            String value;
+            String join = String.join(":", Arrays.copyOfRange(lineSplit, 1, lineSplit.length));
+            if (join.startsWith(" ")) value = join.substring(1);
+            else value = join;
+            headers.put(headerName, value);
             if (headerName.toLowerCase(Locale.ROOT).startsWith("content-length"))
-                contentLength = Integer.parseInt(value.toString().trim());
+                contentLength = Integer.parseInt(value.trim());
             if (headerName.toLowerCase(Locale.ROOT).startsWith("user-agent"))
-                userAgent = value.toString();
+                userAgent = value;
         }
         //Parse body
         StringBuilder body = new StringBuilder();

@@ -137,7 +137,7 @@ public class WebServer implements Runnable {
     }
 
     public WebServer addBeforeRequestFilterAfter(RequestFilter requestFilter, RequestFilter after) {
-        beforeRequestFilters.add(beforeRequestFilters.indexOf(after)+1, requestFilter);
+        beforeRequestFilters.add(beforeRequestFilters.indexOf(after) + 1, requestFilter);
         return this;
     }
 
@@ -152,7 +152,7 @@ public class WebServer implements Runnable {
     }
 
     public WebServer addAfterRequestFilterAfter(RequestFilter requestFilter, RequestFilter after) {
-        afterRequestFilters.add(afterRequestFilters.indexOf(after)+1, requestFilter);
+        afterRequestFilters.add(afterRequestFilters.indexOf(after) + 1, requestFilter);
         return this;
     }
 
