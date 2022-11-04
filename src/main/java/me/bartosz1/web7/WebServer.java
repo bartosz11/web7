@@ -9,19 +9,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
-    public static final String BRAND = "web7/0.0.9";
+    public static final String BRAND = "web7/0.1.0";
     private WebEndpointHandler methodNotAllowedHandler;
     private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
-    private final ExecutorService executorService;
+    private final ThreadPoolExecutor threadPoolExecutor;
+    private ServerSocket serverSocket;
 
     private final List<RequestFilter> beforeRequestFilters = new ArrayList<>();
     private final List<RequestFilter> afterRequestFilters = new ArrayList<>();
@@ -30,13 +31,13 @@ public class WebServer implements Runnable {
     public WebServer(int port) {
         validatePort(port);
         this.PORT = port;
-        executorService = Executors.newFixedThreadPool(5, new HandlerThreadFactory("web7-handler-%d"));
+        this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5, new HandlerThreadFactory("web7-handler-%d"));
     }
 
     public WebServer(int port, int handlerThreadAmt) {
         validatePort(port);
         this.PORT = port;
-        executorService = Executors.newFixedThreadPool(handlerThreadAmt, new HandlerThreadFactory("web7-handler-%d"));
+        this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(handlerThreadAmt, new HandlerThreadFactory("web7-handler-%d"));
     }
 
     public void trace(String path) {
@@ -73,8 +74,8 @@ public class WebServer implements Runnable {
 
     private void addEndpoint(String path, HttpRequestMethod requestMethod, WebEndpointHandler handler) {
         Pattern key = Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)"));
-        HashMap<String, Integer> pathVariableIndexes = new HashMap<>();
         if (!endpoints.containsKey(key)) {
+            HashMap<String, Integer> pathVariableIndexes = new HashMap<>();
             String[] split = path.split("/");
             for (int i = 0; i < split.length; i++) {
                 String current = split[i];
@@ -100,19 +101,29 @@ public class WebServer implements Runnable {
     }
 
     public void shutdown() {
-        executorService.shutdown();
+        if (serverSocket != null && !serverSocket.isClosed()) {
+            try {
+                serverSocket.close();
+                //I guess we can safely ignore that
+            } catch (IOException ignored) {}
+        }
+        if (!threadPoolExecutor.isShutdown()) threadPoolExecutor.shutdown();
         endpoints.clear();
     }
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            while (!executorService.isShutdown()) {
+        try {
+            serverSocket = new ServerSocket(PORT);
+            while (!threadPoolExecutor.isShutdown() && !serverSocket.isClosed()) {
                 Socket socket = serverSocket.accept();
-                executorService.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler, beforeRequestFilters, afterRequestFilters));
+                threadPoolExecutor.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler, beforeRequestFilters, afterRequestFilters));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //subject-to-change?
+            if (!e.getMessage().contains("accept failed")) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -163,7 +174,7 @@ public class WebServer implements Runnable {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                webServer.shutdown();
+                    webServer.shutdown();
             }
         }));
     }
