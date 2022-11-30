@@ -59,5 +59,9 @@ public enum HttpStatus {
         }
         return sb.toString();
     }
+    
+    public int getCode() {
+        return code;   
+    }
 
 }
