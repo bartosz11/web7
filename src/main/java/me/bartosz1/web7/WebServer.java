@@ -98,7 +98,7 @@ public class WebServer implements Runnable {
         mainThread.start();
         addShutdownHook(this);
         started = true;
-        LOGGER.finest("WebServer started listening for connections on port " + PORT + "!");
+        LOGGER.info("WebServer started listening for connections on port " + PORT + "!");
         return this;
     }
 
@@ -112,7 +112,7 @@ public class WebServer implements Runnable {
         }
         if (!threadPoolExecutor.isShutdown()) threadPoolExecutor.shutdown();
         endpoints.clear();
-        LOGGER.finest("WebServer shut down successfully.");
+        LOGGER.info("WebServer shut down successfully.");
     }
 
     @Override
@@ -188,7 +188,7 @@ public class WebServer implements Runnable {
     private void validatePort(int port) {
         if (port < 1 || port > 65535)
             throw new IllegalArgumentException("Invalid port: " + port + " (range of valid ports: 1-65535)");
-        LOGGER.finest("Port " + port + " is valid");
+        LOGGER.fine("Port " + port + " is valid");
     }
 
 }
