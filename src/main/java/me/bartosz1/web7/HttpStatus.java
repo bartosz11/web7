@@ -1,7 +1,9 @@
 package me.bartosz1.web7;
 
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 //WebDAV codes aren't present here
@@ -23,10 +25,22 @@ public enum HttpStatus {
     INTERNAL_SERVER_ERROR(500), NOT_IMPLEMENTED(501), BAD_GATEWAY(502), SERVICE_UNAVAILABLE(503), GATEWAY_TIMEOUT(504), HTTP_VERSION_NOT_SUPPORTED(505), VARIANT_ALSO_NEGOTIATES(506),
     NOT_EXTENDED(510), NETWORK_AUTHENTICATION_REQUIRED(511);
 
+    private static final Map<Integer, HttpStatus> LOOKUP = new HashMap<>();
+
+    static {
+        for (HttpStatus status : HttpStatus.values()) {
+            LOOKUP.put(status.getCode(), status);
+        }
+    }
+
     private final int code;
 
     HttpStatus(int code) {
         this.code = code;
+    }
+
+    public static HttpStatus getFromCode(int code) {
+        return LOOKUP.get(code);
     }
 
     @Override
@@ -57,11 +71,11 @@ public enum HttpStatus {
                 }
                 break;
         }
-        return sb.toString();
+        return sb.toString().trim();
     }
-    
+
     public int getCode() {
-        return code;   
+        return code;
     }
 
 }

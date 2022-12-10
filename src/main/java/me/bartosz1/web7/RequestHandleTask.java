@@ -10,16 +10,17 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class RequestHandleTask implements Runnable {
+    private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
+    private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
+    private static final Logger LOGGER = Logger.getLogger(RequestHandleTask.class.getName());
     private final Socket socket;
     private final HashMap<Pattern, WebEndpointData> endpoints;
     private final WebEndpointHandler methodNotAllowedHandler;
     private final WebEndpointHandler routeNotFoundHandler;
-    private static final TraceEndpointHandler TRACE_ENDPOINT_HANDLER = new TraceEndpointHandler();
-    private static final OptionsEndpointHandler OPTIONS_ENDPOINT_HANDLER = new OptionsEndpointHandler();
-
     private final List<RequestFilter> beforeFilters;
     private final List<RequestFilter> afterFilters;
 
@@ -44,7 +45,7 @@ public class RequestHandleTask implements Runnable {
             String protocol = tokenizer.nextToken();
             WebEndpointData endpointData = findEndpoint(endpoint);
             Request request = ParsingUtils.parseRequest(bufferedReader, socket.getInetAddress(), method, s, protocol, endpointData);
-            Response response = new Response(printWriter, protocol);
+            Response response = new Response(printWriter);
             if (endpointData != null) {
                 if (method == endpointData.getRequestMethod() || method == HttpRequestMethod.OPTIONS || method == HttpRequestMethod.HEAD || endpointData.getRequestMethod() == HttpRequestMethod.ANY) {
                     for (RequestFilter filter : beforeFilters) {
@@ -62,7 +63,7 @@ public class RequestHandleTask implements Runnable {
                         default:
                             WebEndpointHandler handler = endpointData.getHandler();
                             if (handler != null) handler.handle(request, response);
-                            //HEAD requests shouldn't return body
+                            //HEAD requests shouldn't return body, actually maybe this shouldn't be enforced on library level /shrug
                             if (method == HttpRequestMethod.HEAD) {
                                 response.setBody(null);
                                 response.setContentType(null);
@@ -82,9 +83,11 @@ public class RequestHandleTask implements Runnable {
                 if (routeNotFoundHandler != null) routeNotFoundHandler.handle(request, response);
                 response.setStatus(HttpStatus.NOT_FOUND);
             }
-            ParsingUtils.parseResponse(response, printWriter, protocol);
-            //we probably should do something here
-        } catch (IOException ignored) {
+            ParsingUtils.parseResponse(response, printWriter);
+        } catch (IOException e) {
+            //not much but always helpful if something stupid happens
+            LOGGER.severe("An error occured while handling request. Response probably wasn't sent to the client.");
+            e.printStackTrace();
         }
     }
 

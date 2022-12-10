@@ -9,6 +9,7 @@ import java.util.*;
 
 public class ParsingUtils {
 
+    //todo clean this up
     public static Request parseRequest(BufferedReader bufferedReader, InetAddress addr, HttpRequestMethod requestMethod, String requestedResource, String protocol, WebEndpointData endpointData) throws IOException {
         StringBuilder rawRequest = new StringBuilder();
         rawRequest.append(requestMethod.toString()).append(" ").append(requestedResource).append(" ").append(protocol).append("\n");
@@ -47,7 +48,7 @@ public class ParsingUtils {
         }
         //Parse body
         StringBuilder body = new StringBuilder();
-        //means we got some body
+        //means we got some body, trace requests have no body
         if (contentLength > 0 && !(requestMethod == HttpRequestMethod.TRACE)) {
             int read;
             //-1 should mean EOF
@@ -69,13 +70,12 @@ public class ParsingUtils {
         return new Request(Collections.unmodifiableMap(headers), body.toString(), addr, userAgent, requestMethod, protocol, requestedResource, endpointData, Collections.unmodifiableMap(urlParams), Collections.unmodifiableMap(pathVars), rawRequest.toString());
     }
 
-    public static void parseResponse(Response response, PrintWriter printWriter, String protocol) {
-        printWriter.println(protocol + " " + response.getStatus().toString());
-        printWriter.println("Date: " + new Date());
-        printWriter.println("Server: " + WebServer.BRAND);
-        String contentType = response.getContentType();
-        if (contentType != null && !contentType.isEmpty())
-            printWriter.println("Content-Type: " + response.getContentType());
+    public static void parseResponse(Response response, PrintWriter printWriter) {
+        //set the "mandatory" headers
+        response.setHeader("Date", String.valueOf(new Date())).setHeader("Server", WebServer.BRAND);
+        //At the moment we only support http/1.1, we don't pass the protocol through as it may make some automated clients think that we support 2.0 or 3.0 even though we actually don't
+        printWriter.println("HTTP/1.1 " + response.getStatus().toString());
+        //header parsing logic
         List<Map.Entry<String, String>> entries = new ArrayList<>(response.getHeaders().entrySet());
         for (Map.Entry<String, String> entry : entries) {
             printWriter.println(entry.getKey() + ": " + entry.getValue());

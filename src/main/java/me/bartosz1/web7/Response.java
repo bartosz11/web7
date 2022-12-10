@@ -9,25 +9,22 @@ import java.util.List;
 
 public class Response {
 
-    //I think these are okay for default values, user can change them later anyway
+    private final PrintWriter outputStream;
+    //I think OK is a good default value
     private HttpStatus status = HttpStatus.OK;
-    private String contentType = "text/plain";
     private String body;
     private HashMap<String, String> headers = new HashMap<>();
-    private final PrintWriter outputStream;
-    private final String protocol;
 
-    public Response(PrintWriter outputStream, String protocol) {
+    public Response(PrintWriter outputStream) {
         this.outputStream = outputStream;
-        this.protocol = protocol;
     }
 
     public String getContentType() {
-        return contentType;
+        return headers.get("Content-Type");
     }
 
     public Response setContentType(String contentType) {
-        this.contentType = contentType;
+        setHeader("Content-Type", contentType);
         return this;
     }
 
@@ -60,7 +57,7 @@ public class Response {
 
     public Response setRedirect(String url) {
         status = HttpStatus.MOVED_PERMANENTLY;
-        contentType = null;
+        headers.remove("Content-Type");
         body = null;
         headers.put("Location", url);
         return this;
@@ -68,7 +65,7 @@ public class Response {
 
     public Response setRedirect(String url, HttpStatus statusCode) {
         status = statusCode;
-        contentType = null;
+        headers.remove("Content-Type");
         body = null;
         headers.put("Location", url);
         return this;
@@ -76,7 +73,7 @@ public class Response {
 
     public Response useFileAsBody(File file) {
         if (file.canRead()) {
-            contentType = MimeType.getByFileName(file).getMimeType();
+            setContentType(MimeType.getFromFileName(file).getMimeType());
             try {
                 List<String> bodyLines = Files.readAllLines(file.toPath());
                 StringBuilder sb = new StringBuilder();
@@ -97,6 +94,6 @@ public class Response {
     }
 
     public void send() {
-        ParsingUtils.parseResponse(this, outputStream, protocol);
+        ParsingUtils.parseResponse(this, outputStream);
     }
 }
