@@ -45,6 +45,7 @@ public class ParsingUtils {
                 bodyBytes[bodyBytesIndex] = (byte) currentByte;
                 bodyBytesIndex++;
             }
+            if (bufferedInputStream.available() == 0) break;
         }
         //parse request
         //parse first line
@@ -112,14 +113,17 @@ public class ParsingUtils {
         //body
         if (response.getBody() != null && response.getBody().length != 0)
             bufferedOutputStream.write(response.getBody());
+        bufferedOutputStream.close();
     }
 
     //I can't believe Java 7 doesn't have String.join
     //https://media.discordapp.net/attachments/871679472800268308/1087843930055397386/image.png
     public static String join(String[] array, String delimiter) {
         StringBuilder joined = new StringBuilder();
-        for (String s : array) {
-            joined.append(s).append(delimiter);
+        for (int i = 0; i < array.length; i++) {
+            String s = array[i];
+            joined.append(s);
+            if (i != array.length - 1) joined.append(delimiter);
         }
         return joined.toString();
     }

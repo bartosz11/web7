@@ -73,4 +73,12 @@ public class Request {
     public String getBodyAsString() {
         return new String(body, StandardCharsets.UTF_8);
     }
+
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public String getContentType() {
+        return headers.get("Content-Type");
+    }
 }
