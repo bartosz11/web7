@@ -11,21 +11,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
+    public static final String BRAND = "web7/0.2.0";
+    private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
-    public static final String BRAND = "web7/0.1.0";
-    private WebEndpointHandler methodNotAllowedHandler;
-    private WebEndpointHandler routeNotFoundHandler;
     //currently final, might change this at some point
     private final ThreadPoolExecutor threadPoolExecutor;
-    private ServerSocket serverSocket;
-
     private final List<RequestFilter> beforeRequestFilters = new ArrayList<>();
     private final List<RequestFilter> afterRequestFilters = new ArrayList<>();
+    private WebEndpointHandler methodNotAllowedHandler;
+    private WebEndpointHandler routeNotFoundHandler;
+    private ServerSocket serverSocket;
     private boolean started = false;
 
     public WebServer(int port) {
@@ -97,6 +98,7 @@ public class WebServer implements Runnable {
         mainThread.start();
         addShutdownHook(this);
         started = true;
+        LOGGER.info("WebServer started listening for connections on port " + PORT + "!");
         return this;
     }
 
@@ -105,10 +107,12 @@ public class WebServer implements Runnable {
             try {
                 serverSocket.close();
                 //I guess we can safely ignore that
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
         if (!threadPoolExecutor.isShutdown()) threadPoolExecutor.shutdown();
         endpoints.clear();
+        LOGGER.info("WebServer shut down successfully.");
     }
 
     @Override
@@ -122,6 +126,7 @@ public class WebServer implements Runnable {
         } catch (IOException e) {
             //subject-to-change?
             if (!e.getMessage().contains("accept failed")) {
+                LOGGER.severe("web7: An error occurred");
                 e.printStackTrace();
             }
         }
@@ -170,11 +175,11 @@ public class WebServer implements Runnable {
     //Suppressed so IntellIJ stops crying, needs to be done this way if I want to keep compatibility with Java 7 / older Android API versions
     //(compatibility might be dropped if Google deprecates Android APIs lower than 24)
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
-    private void addShutdownHook(WebServer webServer) {
+    private void addShutdownHook(final WebServer webServer) {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                    webServer.shutdown();
+                webServer.shutdown();
             }
         }));
     }
@@ -183,6 +188,7 @@ public class WebServer implements Runnable {
     private void validatePort(int port) {
         if (port < 1 || port > 65535)
             throw new IllegalArgumentException("Invalid port: " + port + " (range of valid ports: 1-65535)");
+        LOGGER.fine("Port " + port + " is valid");
     }
 
 }

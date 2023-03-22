@@ -1,6 +1,8 @@
 package me.bartosz1.web7;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 //Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
@@ -18,17 +20,21 @@ public enum MimeType {
     TXT("text/plain"), VSD("application/vnd.visio"), WAV("audio/wav"), WEBA("audio/webm"), WEBM("video/webm"), WEBP("image/webp"), WOFF("font/woff"), WOFF2("font/woff2"), XHTML("application/xhtml+xml"),
     XLS("application/vnd.ms-excel"), XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"), XML("application/xml"), XUL("application/vnd.mozilla.xul+xml"), ZIP("application/zip"), SEVENZIP("application/x-7z-compressed"),
     OTHER("application/octet-stream");
+    private static final Map<String, MimeType> LOOKUP = new HashMap<>();
+
+    static {
+        for (MimeType type : MimeType.values()) {
+            LOOKUP.put(type.getMimeType(), type);
+        }
+    }
+
     private final String mimeType;
 
     MimeType(String mimeType) {
         this.mimeType = mimeType;
     }
 
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    public static MimeType getByFileName(File file) {
+    public static MimeType getFromFileName(File file) {
         String[] split = file.getName().split("\\.");
         String last = split[split.length - 1];
         try {
@@ -37,5 +43,13 @@ public enum MimeType {
         } catch (IllegalArgumentException e) {
             return OTHER;
         }
+    }
+
+    public static MimeType getFromString(String s) {
+        return LOOKUP.get(s);
+    }
+
+    public String getMimeType() {
+        return mimeType;
     }
 }

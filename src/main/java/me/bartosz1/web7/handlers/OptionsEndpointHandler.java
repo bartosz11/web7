@@ -9,7 +9,7 @@ public class OptionsEndpointHandler implements WebEndpointHandler {
     @Override
     public void handle(Request request, Response response) {
         HttpRequestMethod supportedRequestMethod = request.getEndpointData().getRequestMethod();
-        if (request.getPath().equals("*") || supportedRequestMethod == HttpRequestMethod.ANY)
+        if (request.getContextPath().equals("*") || supportedRequestMethod == HttpRequestMethod.ANY)
             response.getHeaders().put("Allow", "GET,HEAD,POST,PUT,DELETE,OPTIONS,TRACE");
         else
             response.getHeaders().put("Allow", supportedRequestMethod + ",HEAD,OPTIONS");

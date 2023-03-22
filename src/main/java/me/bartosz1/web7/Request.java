@@ -1,90 +1,84 @@
 package me.bartosz1.web7;
 
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class Request {
 
-    private final Map<String, String> headers;
-    private final String body;
-    private final InetAddress remoteAddress;
-    private final String userAgent;
     private final HttpRequestMethod requestMethod;
+    private final String contextPath;
     private final String protocol;
-    private final String path;
+    private final Map<String, String> headers;
+    private final byte[] body;
     private final WebEndpointData endpointData;
-    private final Map<String, String> urlParams;
+    private final Map<String, String> requestParams;
     private final Map<String, String> pathVariables;
     private final String rawRequest;
+    private final InetAddress ipAddress;
 
-    public Request(Map<String, String> headers, String body, InetAddress remoteAddress, String userAgent, HttpRequestMethod requestMethod, String protocol, String path, WebEndpointData endpointData, Map<String, String> params, Map<String, String> pathVariables, String rawRequest) {
+    public Request(HttpRequestMethod requestMethod, String contextPath, String protocol, Map<String, String> headers, byte[] body, WebEndpointData endpointData, Map<String, String> requestParams, Map<String, String> pathVariables, String rawRequest, InetAddress ipAddress) {
+        this.requestMethod = requestMethod;
+        this.contextPath = contextPath;
+        this.protocol = protocol;
         this.headers = headers;
         this.body = body;
-        this.remoteAddress = remoteAddress;
-        this.userAgent = userAgent;
-        this.requestMethod = requestMethod;
-        this.protocol = protocol;
-        this.path = path;
-        this.pathVariables = pathVariables;
         this.endpointData = endpointData;
-        this.urlParams = params;
+        this.requestParams = requestParams;
+        this.pathVariables = pathVariables;
         this.rawRequest = rawRequest;
-    }
-
-    public String getBody() {
-        return body;
+        this.ipAddress = ipAddress;
     }
 
     public HttpRequestMethod getRequestMethod() {
         return requestMethod;
     }
 
+    public String getContextPath() {
+        return contextPath;
+    }
+
     public String getProtocol() {
         return protocol;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    public InetAddress getRemoteAddress() {
-        return remoteAddress;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public WebEndpointData getEndpointData() {
-        return endpointData;
-    }
-
-    public String getRawRequest() {
-        return rawRequest;
-    }
-
-    public String getHeader(String name) {
-        return headers.get(name);
-    }
-
-    public String getURLParameter(String name) {
-        return urlParams.get(name);
-    }
-
-    public String getPathVariable(String name) {
-        return pathVariables.get(name);
     }
 
     public Map<String, String> getHeaders() {
         return headers;
     }
 
-    public Map<String, String> getURLParameters() {
-        return urlParams;
+    public byte[] getBody() {
+        return body;
+    }
+
+    public WebEndpointData getEndpointData() {
+        return endpointData;
+    }
+
+    public Map<String, String> getRequestParams() {
+        return requestParams;
     }
 
     public Map<String, String> getPathVariables() {
         return pathVariables;
     }
 
+    public String getRawRequest() {
+        return rawRequest;
+    }
+
+    public InetAddress getIPAddress() {
+        return ipAddress;
+    }
+
+    public String getBodyAsString() {
+        return new String(body, StandardCharsets.UTF_8);
+    }
+
+    public String getHeader(String name) {
+        return headers.get(name);
+    }
+
+    public String getContentType() {
+        return headers.get("Content-Type");
+    }
 }

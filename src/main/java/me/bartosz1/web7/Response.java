@@ -1,33 +1,28 @@
 package me.bartosz1.web7;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
 
 public class Response {
 
-    //I think these are okay for default values, user can change them later anyway
+    private final BufferedOutputStream bufferedOutputStream;
+    //I think OK is a good default value
     private HttpStatus status = HttpStatus.OK;
-    private String contentType = "text/plain";
-    private String body;
+    private byte[] body;
     private HashMap<String, String> headers = new HashMap<>();
-    private final PrintWriter outputStream;
-    private final String protocol;
 
-    public Response(PrintWriter outputStream, String protocol) {
-        this.outputStream = outputStream;
-        this.protocol = protocol;
+    public Response(BufferedOutputStream bufferedOutputStream) {
+        this.bufferedOutputStream = bufferedOutputStream;
     }
 
     public String getContentType() {
-        return contentType;
+        return headers.get("Content-Type");
     }
 
     public Response setContentType(String contentType) {
-        this.contentType = contentType;
+        setHeader("Content-Type", contentType);
         return this;
     }
 
@@ -49,18 +44,27 @@ public class Response {
         return this;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
     }
 
-    public Response setBody(String body) {
+    public Response setBody(byte[] body) {
         this.body = body;
         return this;
     }
 
+    public Response setBody(String body) {
+        this.body = body.getBytes(StandardCharsets.UTF_8);
+        return this;
+    }
+
+    public String getBodyAsString() {
+        return new String(body, StandardCharsets.UTF_8);
+    }
+
     public Response setRedirect(String url) {
         status = HttpStatus.MOVED_PERMANENTLY;
-        contentType = null;
+        headers.remove("Content-Type");
         body = null;
         headers.put("Location", url);
         return this;
@@ -68,26 +72,31 @@ public class Response {
 
     public Response setRedirect(String url, HttpStatus statusCode) {
         status = statusCode;
-        contentType = null;
+        headers.remove("Content-Type");
         body = null;
         headers.put("Location", url);
         return this;
     }
 
-    public Response useFileAsBody(File file) {
+    public Response useFileAsBody(File file) throws IOException {
         if (file.canRead()) {
-            contentType = MimeType.getByFileName(file).getMimeType();
-            try {
-                List<String> bodyLines = Files.readAllLines(file.toPath());
-                StringBuilder sb = new StringBuilder();
-                for (String bodyLine : bodyLines) {
-                    sb.append(bodyLine).append("\n");
-                }
-                body = sb.toString();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            setContentType(MimeType.getFromFileName(file).getMimeType());
+            body = Files.readAllBytes(file.toPath());
         } else throw new IllegalStateException("File is unreadable!");
+        return this;
+    }
+
+    public Response useInputStreamAsBody(InputStream inputStream, String contentType) throws IOException {
+        setContentType(contentType);
+        byte read;
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        byte[] readBytes = new byte[bufferedInputStream.available()];
+        int readBytesIndex = 0;
+        while ((read = (byte) bufferedInputStream.read()) != -1) {
+            readBytes[readBytesIndex] = read;
+            readBytesIndex++;
+        }
+        body = readBytes;
         return this;
     }
 
@@ -96,7 +105,7 @@ public class Response {
         return this;
     }
 
-    public void send() {
-        ParsingUtils.parseResponse(this, outputStream, protocol);
+    public void send() throws IOException {
+        ParsingUtils.parseResponse(this, bufferedOutputStream);
     }
 }
