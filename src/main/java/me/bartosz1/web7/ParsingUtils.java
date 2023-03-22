@@ -92,7 +92,7 @@ public class ParsingUtils {
             }
         }
         if (bodyBytes != null) rawRequest.append("\r\n").append(new String(bodyBytes, StandardCharsets.UTF_8));
-        return new Request(requestMethod, contextPath, protocol, headers, bodyBytes, endpointData, requestParams, pathVariables, rawRequest.toString(), inetAddress);
+        return new Request(requestMethod, contextPath, protocol, Collections.unmodifiableMap(headers), bodyBytes, endpointData, Collections.unmodifiableMap(requestParams), Collections.unmodifiableMap(pathVariables), rawRequest.toString(), inetAddress);
     }
 
     public static void parseResponse(Response response, BufferedOutputStream bufferedOutputStream) throws IOException {
