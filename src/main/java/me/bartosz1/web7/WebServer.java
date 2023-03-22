@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
-    public static final String BRAND = "web7/0.1.1";
+    public static final String BRAND = "web7/0.2.0";
     private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
@@ -126,7 +126,7 @@ public class WebServer implements Runnable {
         } catch (IOException e) {
             //subject-to-change?
             if (!e.getMessage().contains("accept failed")) {
-                LOGGER.severe("An error occurred");
+                LOGGER.severe("web7: An error occurred");
                 e.printStackTrace();
             }
         }
@@ -175,7 +175,7 @@ public class WebServer implements Runnable {
     //Suppressed so IntellIJ stops crying, needs to be done this way if I want to keep compatibility with Java 7 / older Android API versions
     //(compatibility might be dropped if Google deprecates Android APIs lower than 24)
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
-    private void addShutdownHook(WebServer webServer) {
+    private void addShutdownHook(final WebServer webServer) {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {

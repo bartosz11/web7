@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-//WebDAV codes aren't present here
+//WebDAV's codes aren't present here
 //No, this enum isn't copied from Spring's source code lol
 @SuppressWarnings("unused")
 public enum HttpStatus {
