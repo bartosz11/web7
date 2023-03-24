@@ -3,6 +3,9 @@ package me.bartosz1.web7;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Used internally to create handler threads with naming scheme "web7-handler-%d"
+ */
 public class HandlerThreadFactory implements ThreadFactory {
     private final String namingScheme;
     private final AtomicInteger counter = new AtomicInteger();

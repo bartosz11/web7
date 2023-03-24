@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * A class used internally to convert HTTP requests to {@link me.bartosz1.web7.Request} instances and {@link me.bartosz1.web7.Response} instances to HTTP responses.
+ */
 public class ParsingUtils {
 
 
@@ -117,8 +120,7 @@ public class ParsingUtils {
     }
 
     //I can't believe Java 7 doesn't have String.join
-    //https://media.discordapp.net/attachments/871679472800268308/1087843930055397386/image.png
-    public static String join(String[] array, String delimiter) {
+    private static String join(String[] array, String delimiter) {
         StringBuilder joined = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
             String s = array[i];

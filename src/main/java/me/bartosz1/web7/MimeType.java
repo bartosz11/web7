@@ -5,8 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-//Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-//All from above are listed here except .3gp and .3g2
+/*
+  Representation of most of MIME types listed at https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types along with their file name extensions.
+ */
 public enum MimeType {
 
     AAC("audio/aac"), ABW("application/x-abiword"), ARC("application/x-freearc"), AVIF("image/avif"), AVI("video/x-msvideo"), AZW("application/vnd.amazon.ebook"), BIN("application/octet-stream"),
@@ -34,8 +35,20 @@ public enum MimeType {
         this.mimeType = mimeType;
     }
 
+    /**
+     * @param file - The file to return MIME type for
+     * @return corresponding MimeType enum value
+     */
     public static MimeType getFromFileName(File file) {
-        String[] split = file.getName().split("\\.");
+        return getFromFileName(file.getName());
+    }
+
+    /**
+     * @param name - file name to return MIME type for
+     * @return corresponding MimeType enum value
+     */
+    public static MimeType getFromFileName(String name) {
+        String[] split = name.split("\\.");
         String last = split[split.length - 1];
         try {
             if (last.equalsIgnoreCase("7Z")) return SEVENZIP;
@@ -45,11 +58,25 @@ public enum MimeType {
         }
     }
 
-    public static MimeType getFromString(String s) {
+    /**
+     * @param s The MIME type as a String, for example "application/json"
+     * @return corresponding MIME type enum value
+     */
+    public static MimeType getFromMimeTypeString(String s) {
         return LOOKUP.get(s);
     }
 
+    /**
+     * @return MIME type as a string, for example "application/json"
+     */
     public String getMimeType() {
         return mimeType;
+    }
+
+    /**
+     * @return corresponding file extension or a blank string if called on OTHER value
+     */
+    public String getFileNameExtension() {
+        return this == OTHER ? "" : name().toLowerCase();
     }
 }

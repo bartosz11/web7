@@ -8,6 +8,10 @@ import java.util.StringTokenizer;
 
 //WebDAV's codes aren't present here
 //No, this enum isn't copied from Spring's source code lol
+
+/**
+ * Representation of all HTTP statuses excluding WebDAV and 306
+ */
 @SuppressWarnings("unused")
 public enum HttpStatus {
     //100-199
@@ -39,6 +43,10 @@ public enum HttpStatus {
         this.code = code;
     }
 
+    /**
+     * @param code HTTP status code to look up enum value for
+     * @return HttpStatus enum value with corresponding code
+     */
     public static HttpStatus getFromCode(int code) {
         return LOOKUP.get(code);
     }
