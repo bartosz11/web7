@@ -29,46 +29,99 @@ public class WebServer implements Runnable {
     private ServerSocket serverSocket;
     private boolean started = false;
 
+    /**
+     * @param port The port to bind the web server to. Needs to fit in 1-65535 range.
+     */
     public WebServer(int port) {
         validatePort(port);
         this.PORT = port;
         this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5, new HandlerThreadFactory("web7-handler-%d"));
     }
 
+    /**
+     * @param port             The port to bind the web server to. Needs to fit in 1-65535 range.
+     * @param handlerThreadAmt Amount of handler threads to start.
+     */
     public WebServer(int port, int handlerThreadAmt) {
         validatePort(port);
         this.PORT = port;
         this.threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(handlerThreadAmt, new HandlerThreadFactory("web7-handler-%d"));
     }
 
+    /**
+     * Adds a trace endpoint on specified path
+     *
+     * @param path Path this endpoint should be available on
+     */
     public void trace(String path) {
         addEndpoint(path, HttpRequestMethod.TRACE, null);
     }
 
+    /**
+     * Adds an endpoint with only GET method allowed.
+     *
+     * @param path    Path this endpoint should be available on
+     * @param handler Handler for this endpoint
+     */
     public void get(String path, WebEndpointHandler handler) {
         addEndpoint(path, HttpRequestMethod.GET, handler);
     }
 
+    /**
+     * Adds an endpoint with only POST method allowed.
+     *
+     * @param path    Path this endpoint should be available on
+     * @param handler Handler for this endpoint
+     */
     public void post(String path, WebEndpointHandler handler) {
         addEndpoint(path, HttpRequestMethod.POST, handler);
     }
 
+    /**
+     * Adds an endpoint with only PUT method allowed.
+     *
+     * @param path    Path this endpoint should be available on
+     * @param handler Handler for this endpoint
+     */
     public void put(String path, WebEndpointHandler handler) {
         addEndpoint(path, HttpRequestMethod.PUT, handler);
     }
 
+    /**
+     * Adds an endpoint with only DELETE method allowed.
+     *
+     * @param path    Path this endpoint should be available on
+     * @param handler Handler for this endpoint
+     */
     public void delete(String path, WebEndpointHandler handler) {
         addEndpoint(path, HttpRequestMethod.DELETE, handler);
     }
 
+    /**
+     * Adds an endpoint with only OPTIONS method allowed.
+     *
+     * @param path    Path this endpoint should be available on
+     * @param handler Handler for this endpoint
+     */
     public void options(String path, WebEndpointHandler handler) {
         addEndpoint(path, HttpRequestMethod.OPTIONS, handler);
     }
 
+    /**
+     * Adds an endpoint with any request method allowed.
+     *
+     * @param path    Path this endpoint should be available on
+     * @param handler Handler for this endpoint
+     */
     public void any(String path, WebEndpointHandler handler) {
         addEndpoint(path, HttpRequestMethod.ANY, handler);
     }
 
+    /**
+     * Removes an endpoint.
+     *
+     * @param path Path used by the endpoint to unmap
+     */
     public void unmap(String path) {
         endpoints.remove(Pattern.compile(path.replaceAll("(\\$[^/]+)", "([^/]+)")));
     }
@@ -91,6 +144,9 @@ public class WebServer implements Runnable {
         } else throw new IllegalArgumentException("Mapping " + path + " is already present");
     }
 
+    /**
+     * Starts the web server. Can be only called once per instance of this class.
+     */
     public WebServer start() {
         if (started)
             throw new IllegalStateException("Webserver has already started! (WebServer class instance can't be reused once shut down)");
@@ -102,6 +158,9 @@ public class WebServer implements Runnable {
         return this;
     }
 
+    /**
+     * Shuts down the web server.
+     */
     public void shutdown() {
         if (serverSocket != null && !serverSocket.isClosed()) {
             try {
@@ -132,11 +191,23 @@ public class WebServer implements Runnable {
         }
     }
 
+    /**
+     * Sets the handler used for requests that used wrong request methods.
+     *
+     * @param methodNotAllowedHandler The handler to set
+     * @return WebServer instance this method was called on (builder method)
+     */
     public WebServer setMethodNotAllowedHandler(WebEndpointHandler methodNotAllowedHandler) {
         this.methodNotAllowedHandler = methodNotAllowedHandler;
         return this;
     }
 
+    /**
+     * Sets the handler used for requests that tried to utilize a nonexistent endpoint.
+     *
+     * @param routeNotFoundHandler The handler to set
+     * @return WebServer instance this method was called on (builder method)
+     */
     public WebServer setRouteNotFoundHandler(WebEndpointHandler routeNotFoundHandler) {
         this.routeNotFoundHandler = routeNotFoundHandler;
         return this;
