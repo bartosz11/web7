@@ -1,5 +1,5 @@
 # Used for testing changes, not important
-src/main/java/ExampleApp.java
+src/main/java/me/bartosz1/web7/ExampleApp.java
 notes.txt
 # VSCode counter plugin
 .VSCodeCounter/

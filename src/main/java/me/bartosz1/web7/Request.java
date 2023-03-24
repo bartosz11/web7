@@ -41,7 +41,7 @@ public class Request {
     }
 
     /**
-     * @return Full path the client used to make the request, for example "/1/greet" when endpoint is "/{1}/greet"
+     * @return Full path the client used to make the request, for example "/1/greet" when endpoint is "/$id/greet"
      */
     public String getContextPath() {
         return contextPath;
