@@ -1,6 +1,6 @@
-package me.bartosz1.web7;
+package one.bartosz.web7;
 
-import me.bartosz1.web7.handlers.WebEndpointHandler;
+import one.bartosz.web7.handlers.WebEndpointHandler;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
-package me.bartosz1.web7;
+package one.bartosz.web7;
 
-import me.bartosz1.web7.handlers.WebEndpointHandler;
+import one.bartosz.web7.handlers.WebEndpointHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Logger;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
-    public static final String BRAND = "web7/0.2.0";
+    public static final String BRAND = "web7/0.3.0";
     private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
@@ -28,6 +29,7 @@ public class WebServer implements Runnable {
     private WebEndpointHandler routeNotFoundHandler;
     private ServerSocket serverSocket;
     private boolean started = false;
+    private final CountDownLatch startLatch = new CountDownLatch(1);
 
     /**
      * @param port The port to bind the web server to. Needs to fit in 1-65535 range.
@@ -152,10 +154,24 @@ public class WebServer implements Runnable {
             throw new IllegalStateException("Webserver has already started! (WebServer class instance can't be reused once shut down)");
         Thread mainThread = new Thread(this, "web7-main");
         mainThread.start();
+        try {
+            startLatch.await();
+        } catch (InterruptedException ignored) {
+        }
         addShutdownHook(this);
         started = true;
         LOGGER.info("WebServer started listening for connections on port " + PORT + "!");
         return this;
+    }
+
+    /**
+     * Starts the web server. Can be only called once per instance of this class.
+     *
+     * @param c Function to call after starting the server. Note that the server starting process is asynchronous.
+     */
+    public void start(Callback c) {
+        start();
+        c.callback();
     }
 
     /**
@@ -179,6 +195,7 @@ public class WebServer implements Runnable {
         try {
             serverSocket = new ServerSocket(PORT);
             while (!threadPoolExecutor.isShutdown() && !serverSocket.isClosed()) {
+                if (startLatch.getCount() == 1) startLatch.countDown();
                 Socket socket = serverSocket.accept();
                 threadPoolExecutor.execute(new RequestHandleTask(socket, endpoints, methodNotAllowedHandler, routeNotFoundHandler, beforeRequestFilters, afterRequestFilters));
             }
