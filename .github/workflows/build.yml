@@ -25,6 +25,4 @@ jobs:
         run: ./gradlew build
       - name: Publish snapshot
         if: github.event_name != 'pull_request'
-        run: ./gradlew publishMavenPublicationToBartoszsRepoSnapshotsRepository \
-          -PbartoszsRepoSnapshotsUsername=${{ secrets.MAVEN_SNAPSHOTS_NAME }} \
-          -PbartoszsRepoSnapshotsPassowrd=${{ secrets.MAVEN_SNAPSHOTS_SECRET }}
+        run: ./gradlew publishMavenPublicationToBartoszsRepoSnapshotsRepository -PbartoszsRepoSnapshotsUsername=${{ secrets.MAVEN_SNAPSHOTS_NAME }} -PbartoszsRepoSnapshotsPassword=${{ secrets.MAVEN_SNAPSHOTS_SECRET }}
