@@ -19,4 +19,4 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew publishMavenPublicationToBartoszsRepoReleasesRepository -PbartoszsRepoReleasesUsername=${{ secrets.MAVEN_RELEASES_NAME }} -PbartoszsRepoReleasesPassword=${{ secrets.MAVEN_RELEASES_SECRET }}
+        run: ./gradlew build publishMavenPublicationToBartoszsRepoReleasesRepository -PbartoszsRepoReleasesUsername=${{ secrets.MAVEN_RELEASES_NAME }} -PbartoszsRepoReleasesPassword=${{ secrets.MAVEN_RELEASES_SECRET }}
