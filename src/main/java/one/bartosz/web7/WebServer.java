@@ -1,6 +1,6 @@
-package me.bartosz1.web7;
+package one.bartosz.web7;
 
-import me.bartosz1.web7.handlers.WebEndpointHandler;
+import one.bartosz.web7.handlers.WebEndpointHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
-    public static final String BRAND = "web7/0.2.0";
+    public static final String BRAND = "web7/0.3.0";
     private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
@@ -167,7 +167,7 @@ public class WebServer implements Runnable {
     /**
      * Starts the web server. Can be only called once per instance of this class.
      *
-     * @param c Function to call after starting the server
+     * @param c Function to call after starting the server. Note that the server starting process is asynchronous.
      */
     public void start(Callback c) {
         start();

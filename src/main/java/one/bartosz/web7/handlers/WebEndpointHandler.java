@@ -1,7 +1,7 @@
-package me.bartosz1.web7.handlers;
+package one.bartosz.web7.handlers;
 
-import me.bartosz1.web7.Request;
-import me.bartosz1.web7.Response;
+import one.bartosz.web7.Request;
+import one.bartosz.web7.Response;
 
 /**
  * Representation of all endpoint handlers.

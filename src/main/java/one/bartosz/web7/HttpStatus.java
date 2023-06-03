@@ -1,4 +1,4 @@
-package me.bartosz1.web7;
+package one.bartosz.web7;
 
 
 import java.util.HashMap;

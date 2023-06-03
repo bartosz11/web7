@@ -1,8 +1,8 @@
-package me.bartosz1.web7;
+package one.bartosz.web7;
 
-import me.bartosz1.web7.handlers.OptionsEndpointHandler;
-import me.bartosz1.web7.handlers.TraceEndpointHandler;
-import me.bartosz1.web7.handlers.WebEndpointHandler;
+import one.bartosz.web7.handlers.OptionsEndpointHandler;
+import one.bartosz.web7.handlers.TraceEndpointHandler;
+import one.bartosz.web7.handlers.WebEndpointHandler;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

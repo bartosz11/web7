@@ -1,4 +1,4 @@
-package me.bartosz1.web7;
+package one.bartosz.web7;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * A class used internally to convert HTTP requests to {@link me.bartosz1.web7.Request} instances and {@link me.bartosz1.web7.Response} instances to HTTP responses.
+ * A class used internally to convert HTTP requests to {@link Request} instances and {@link Response} instances to HTTP responses.
  */
 public class ParsingUtils {
 

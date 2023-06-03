@@ -3,8 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.github.bartosz11'
-version '0.2.0'
+group 'one.bartosz'
+version '0.3.0'
 
 repositories {
     mavenCentral()
@@ -22,11 +22,30 @@ targetCompatibility = 1.8
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
+            groupId = "one.bartosz"
+            artifactId = "web7"
+            version = "0.3.0"
             from components.java
         }
     }
     repositories {
         mavenLocal()
+        maven {
+            name = "bartoszsRepoReleases"
+            url = "https://repo.bartosz.one/releases"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+        maven {
+            name = "bartoszsRepoSnapshots"
+            url = "https://repo.bartosz.one/snapshots"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
     }
 }
