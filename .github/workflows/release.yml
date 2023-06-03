@@ -21,4 +21,4 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
       - name: Publish
-        run: ./gradlew publishMavenPublicationToBartoszsRepoReleasesRepository -PbartoszsRepoReleasesUsername=${{ secrets.MAVEN_RELEASES_NAME }} -PbartoszsRepoReleasesPassword=${{ secrets.MAVEN_RELEASES_SECRET }}
+        run: ./gradlew publishMavenPublicationToBartoszsRepoReleasesRepository -PbartoszsRepoReleasesUsername=${{ secrets.MAVEN_NAME }} -PbartoszsRepoReleasesPassword=${{ secrets.MAVEN_SECRET }}
