@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, 'release version') }}
+    if: ${{ contains(github.event.head_commit.message, 'release version') || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK
@@ -19,7 +19,4 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew build publishMavenPublicationToBartoszsRepoReleasesRepository
-        env:
-          MAVEN_NAME: ${{ secrets.MAVEN_RELEASES_NAME }}
-          MAVEN_SECRET: ${{ secrets.MAVEN_RELEASES_SECRET }}
+        run: ./gradlew publishMavenPublicationToBartoszsRepoReleasesRepository -PbartoszsRepoRELEASESUsername=${{ secrets.MAVEN_RELEASES_NAME }} -PbartoszsRepoRELEASESPassword=${{ secrets.MAVEN_RELEASES_SECRET }}
