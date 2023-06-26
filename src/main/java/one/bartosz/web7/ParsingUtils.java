@@ -59,12 +59,13 @@ public class ParsingUtils {
         String protocol = firstLineTokenizer.nextToken();
         //parse headers
         HashMap<String, String> headers = new HashMap<>();
-        for (String header : lines.subList(1, lines.size())) {
+        //-1 to remove the request+header - body sections separator
+        for (String header : lines.subList(1, lines.size() - 1)) {
             rawRequest.append(header).append("\r\n");
             String[] headerSplit = header.split(":");
             String name = headerSplit[0];
             //trim is used to remove unwanted leading space
-            String value = join(Arrays.copyOfRange(headerSplit, 1, headerSplit.length), ":").trim();
+            String value = joinHeaderValueSplit(Arrays.copyOfRange(headerSplit, 1, headerSplit.length)).trim();
             headers.put(name, value);
         }
         //parse request params
@@ -120,12 +121,12 @@ public class ParsingUtils {
     }
 
     //I can't believe Java 7 doesn't have String.join
-    private static String join(String[] array, String delimiter) {
+    private static String joinHeaderValueSplit(String[] array) {
         StringBuilder joined = new StringBuilder();
         for (int i = 0; i < array.length; i++) {
             String s = array[i];
             joined.append(s);
-            if (i != array.length - 1) joined.append(delimiter);
+            if (i != array.length - 1) joined.append(":");
         }
         return joined.toString();
     }

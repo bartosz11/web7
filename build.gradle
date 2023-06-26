@@ -3,8 +3,12 @@ plugins {
     id 'maven-publish'
 }
 
+ext {
+    web7_version = '0.3.1-SNAPSHOT'
+}
+
 group 'one.bartosz'
-version '0.3.0'
+version "$web7_version"
 
 repositories {
     mavenCentral()
@@ -20,12 +24,26 @@ test {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+jar {
+    manifest {
+        attributes(
+                "Name": "web7",
+                "Implementation-Title": "web7",
+                "Implementation-Vendor": "bartosz11",
+                "Implementation-Version": "$web7_version",
+                "Specification-Title": "HTTP",
+                "Specification-Version": "1.1",
+                "Specification-Vendor": "IETF",
+        )
+    }
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
             groupId = "one.bartosz"
             artifactId = "web7"
-            version = "0.3.0"
+            version = "$web7_version"
             from components.java
         }
     }

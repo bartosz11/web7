@@ -44,6 +44,8 @@ public class WebEndpointData {
 
     /**
      * Used internally. Indexes of split by / where a $ was found
+     *
+     * @return path variable names and their indexes in split by /
      */
     public Map<String, Integer> getPathVariableIndexes() {
         return pathVariableIndexes;

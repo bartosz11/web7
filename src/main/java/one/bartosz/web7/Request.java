@@ -104,9 +104,10 @@ public class Request {
     }
 
     /**
-     * @return Request body as a String.
+     * @return Request body as a String or null if client didn't supply any
      */
     public String getBodyAsString() {
+        if (body == null) return null;
         return new String(body, StandardCharsets.UTF_8);
     }
 
@@ -123,5 +124,21 @@ public class Request {
      */
     public String getContentType() {
         return headers.get("Content-Type");
+    }
+
+    /**
+     * @param name Name of request param
+     * @return Value of the request param with specified name or null if not found
+     */
+    public String getRequestParam(String name) {
+        return requestParams.get(name);
+    }
+
+    /**
+     * @param name Name of the path variable
+     * @return Value of the path variable with specified name or null if not found
+     */
+    public String getPathVariable(String name) {
+        return pathVariables.get(name);
     }
 }
