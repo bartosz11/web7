@@ -50,6 +50,9 @@ public class ParsingUtils {
             }
             if (bufferedInputStream.available() == 0) break;
         }
+        //return null early if there are no lines preventing "Index 0 out of bounds for length 0"
+        //found it with postman, shouldn't be a significant thing for other http clients
+        if (lines.isEmpty()) return null;
         //parse request
         //parse first line
         rawRequest.append(lines.get(0)).append("\r\n");

@@ -40,6 +40,11 @@ public class RequestHandleTask implements Runnable {
     public void run() {
         try {
             Request request = ParsingUtils.parseRequest(new BufferedInputStream(socket.getInputStream()), socket.getInetAddress(), endpoints);
+            //request can be null if there were no lines to parse
+            if (request == null) {
+                socket.close();
+                return;
+            }
             Response response = new Response(new BufferedOutputStream(socket.getOutputStream()));
             WebEndpointData endpointData = request.getEndpointData();
             HttpRequestMethod method = request.getRequestMethod();
