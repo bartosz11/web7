@@ -4,7 +4,7 @@ plugins {
 }
 
 ext {
-    web7_version = '0.3.1-SNAPSHOT'
+    web7_version = '0.3.1'
 }
 
 group 'one.bartosz'
