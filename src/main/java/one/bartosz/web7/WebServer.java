@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class WebServer implements Runnable {
 
-    public static final String BRAND = "web7/0.3.3-SNAPSHOT";
+    public static final String BRAND = "web7/0.3.3";
     private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
     private final int PORT;
     private final HashMap<Pattern, WebEndpointData> endpoints = new HashMap<>();
