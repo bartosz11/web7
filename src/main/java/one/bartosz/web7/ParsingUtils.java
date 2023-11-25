@@ -86,7 +86,7 @@ public class ParsingUtils {
         List<Map.Entry<Pattern, WebEndpointData>> endpointDataEntries = new ArrayList<>(endpoints.entrySet());
         for (Map.Entry<Pattern, WebEndpointData> entry : endpointDataEntries) {
             Pattern key = entry.getKey();
-            if (key.matcher(contextPath).matches()) endpointData = entry.getValue();
+            if (key.matcher(contextPathSplit[0]).matches()) endpointData = entry.getValue();
         }
         //parse path variables
         HashMap<String, String> pathVariables = new HashMap<>();
